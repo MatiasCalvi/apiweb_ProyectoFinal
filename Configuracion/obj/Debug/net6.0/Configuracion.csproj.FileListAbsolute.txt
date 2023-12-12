@@ -1,0 +1,12 @@
+C:\Users\Matias\Desktop\Desarrollo\Desarrollo\FullStack_Net\C#\programas\ejercicios_Csharp\apiweb_ProyectoFinal\Configuracion\bin\Debug\net6.0\Configuracion.deps.json
+C:\Users\Matias\Desktop\Desarrollo\Desarrollo\FullStack_Net\C#\programas\ejercicios_Csharp\apiweb_ProyectoFinal\Configuracion\bin\Debug\net6.0\Configuracion.dll
+C:\Users\Matias\Desktop\Desarrollo\Desarrollo\FullStack_Net\C#\programas\ejercicios_Csharp\apiweb_ProyectoFinal\Configuracion\bin\Debug\net6.0\Configuracion.pdb
+C:\Users\Matias\Desktop\Desarrollo\Desarrollo\FullStack_Net\C#\programas\ejercicios_Csharp\apiweb_ProyectoFinal\Configuracion\obj\Debug\net6.0\Configuracion.GeneratedMSBuildEditorConfig.editorconfig
+C:\Users\Matias\Desktop\Desarrollo\Desarrollo\FullStack_Net\C#\programas\ejercicios_Csharp\apiweb_ProyectoFinal\Configuracion\obj\Debug\net6.0\Configuracion.AssemblyInfoInputs.cache
+C:\Users\Matias\Desktop\Desarrollo\Desarrollo\FullStack_Net\C#\programas\ejercicios_Csharp\apiweb_ProyectoFinal\Configuracion\obj\Debug\net6.0\Configuracion.AssemblyInfo.cs
+C:\Users\Matias\Desktop\Desarrollo\Desarrollo\FullStack_Net\C#\programas\ejercicios_Csharp\apiweb_ProyectoFinal\Configuracion\obj\Debug\net6.0\Configuracion.csproj.CoreCompileInputs.cache
+C:\Users\Matias\Desktop\Desarrollo\Desarrollo\FullStack_Net\C#\programas\ejercicios_Csharp\apiweb_ProyectoFinal\Configuracion\obj\Debug\net6.0\Configuracion.sourcelink.json
+C:\Users\Matias\Desktop\Desarrollo\Desarrollo\FullStack_Net\C#\programas\ejercicios_Csharp\apiweb_ProyectoFinal\Configuracion\obj\Debug\net6.0\Configuracion.dll
+C:\Users\Matias\Desktop\Desarrollo\Desarrollo\FullStack_Net\C#\programas\ejercicios_Csharp\apiweb_ProyectoFinal\Configuracion\obj\Debug\net6.0\refint\Configuracion.dll
+C:\Users\Matias\Desktop\Desarrollo\Desarrollo\FullStack_Net\C#\programas\ejercicios_Csharp\apiweb_ProyectoFinal\Configuracion\obj\Debug\net6.0\Configuracion.pdb
+C:\Users\Matias\Desktop\Desarrollo\Desarrollo\FullStack_Net\C#\programas\ejercicios_Csharp\apiweb_ProyectoFinal\Configuracion\obj\Debug\net6.0\ref\Configuracion.dll
