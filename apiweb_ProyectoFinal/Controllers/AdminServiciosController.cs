@@ -239,7 +239,7 @@ namespace apiweb_ProyectoFinal.Controllers
             }
         }
 
-        [HttpPost("ObtenerCarritos")]
+        [HttpGet("ObtenerCarritos")]
         public async Task<IActionResult> ObtenerCarritos()
         {
             try
