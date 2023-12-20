@@ -1,24 +1,18 @@
 ﻿using Datos.Interfaces.IServicios;
 using Datos.Interfaces.IDaos;
-using Datos.Interfaces.IValidaciones;
 using Datos.Modelos;
 using Datos.Modelos.DTO;
-using System.Reflection.PortableExecutable;
-using Datos.Exceptions;
-using System.Net;
-using System.Data;
+
 
 namespace Datos.Servicios
 {
     public class PublicacionServicios : IPublicacionServicios
     {
         private IDaoBDPublicaciones _daoBDPublicaciones;
-        private IMetodosDeValidacion _metodosDeValidacion;
 
-        public PublicacionServicios(IDaoBDPublicaciones daoBDPublicaciones, IMetodosDeValidacion metodosDeValidacion)
+        public PublicacionServicios(IDaoBDPublicaciones daoBDPublicaciones)
         {
             _daoBDPublicaciones = daoBDPublicaciones;
-            _metodosDeValidacion = metodosDeValidacion;
         }
 
         public async Task<List<PublicacionSalida>> ObtenerPublicaciones()
@@ -43,10 +37,7 @@ namespace Datos.Servicios
 
         public async Task<PublicacionSalidaC> CrearPublicacion(PublicacionCreacion pPublicacion)
         {   
-            int usuarioId = await _metodosDeValidacion.ObtenerUsuarioIDToken();
-            pPublicacion.Public_UsuarioID = usuarioId;
             pPublicacion.Public_FCreacion = DateTime.Now;
-
             PublicacionSalidaC publicacionSalida = await _daoBDPublicaciones.CrearPublicacion(pPublicacion);
 
             return publicacionSalida;

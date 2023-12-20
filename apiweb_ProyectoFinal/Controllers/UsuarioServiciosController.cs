@@ -6,9 +6,9 @@ using Microsoft.AspNetCore.Authorization;
 using Datos.Interfaces.IValidaciones;
 
 namespace apiWeb_MVC.Controllers
-{
-    [ApiController]
-    [Route("[controller]")]
+{   
+    [ApiController] //ROLES: 2 = admin , 1= usuario
+    [Route("Usuario")]
 
     public class UsuarioServiciosController : ControllerBase
     {
@@ -24,7 +24,7 @@ namespace apiWeb_MVC.Controllers
         }
 
         [HttpGet("ObtenerUsuario")]
-        [Authorize(Roles = "admin")]
+        [Authorize(Roles = "2")]
         public async Task<IActionResult> ObtenerUsuario([FromQuery] int id)
         {
             try
@@ -37,25 +37,21 @@ namespace apiWeb_MVC.Controllers
             }
             catch (Exception ex)
             {
-                return StatusCode(500, new { Msj = "Error durante la busqueda", Detalle = ex.Message });
+                Console.WriteLine(new { ErrorDetalle = ex.Message });
+                return StatusCode(500);
             }
         }
 
         [HttpPost("Registrarse")]
 
-        public async Task<IActionResult> CrearUsuario([FromBody] UsuarioCreacion pUsuario)
+        public async Task<IActionResult> Registrarse([FromBody] UsuarioCreacion pUsuario)
         {
             try
             {
                 if (!ModelState.IsValid) return BadRequest(ModelState);
-                
-                UsuarioSalida usuario = await _usuarioServicios.ObtenerUsuarioPorEmail(pUsuario.Usuario_Email);
 
+                UsuarioSalida usuario = await _usuarioServicios.ObtenerUsuarioPorEmail(pUsuario.Usuario_Email);//podes hacer este metodo un boolean
                 if (usuario != null) return BadRequest(new { Mensaje = "Email ya en uso." });
-
-                bool esAdmin = await _usuarioServicios.EsAdministrador(pUsuario.Usuario_Email);
-
-                pUsuario.Usuario_Role = esAdmin ? "admin" : "usuario";
 
                 UsuarioSalidaC usuarioSalida = await _usuarioServicios.CrearNuevoUsuario(pUsuario);
 
@@ -68,12 +64,13 @@ namespace apiWeb_MVC.Controllers
             }
             catch (Exception ex)
             {
-                return StatusCode(500, new { Msj= "Error durante la creacion del usuario", Detalle = ex.Message });
+                Console.WriteLine(new { ErrorDetalle = ex.Message });
+                return StatusCode(500);
             }
         }
 
         [HttpPatch("ActualizarUsuario")] // *--> no se puede cambiar el Rol con este controlador
-        [Authorize(Roles = "usuario,admin")]
+        [Authorize(Roles = "1,2")]
         public async Task<IActionResult> ActualizarUsuario([FromBody] UsuarioModif usuario)
         {   
             try
@@ -93,7 +90,8 @@ namespace apiWeb_MVC.Controllers
             }
             catch (Exception ex)
             {
-                return StatusCode(500, new { Msj = "Error durante la actualización del usuario", Detalle = ex.Message });
+                Console.WriteLine(new { ErrorDetalle = ex.Message });
+                return StatusCode(500);
             }
         }
     }

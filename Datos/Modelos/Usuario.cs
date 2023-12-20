@@ -32,7 +32,11 @@ namespace Datos.Modelos
 
         [AllowNull]
         [JsonIgnore]
-        public string? Usuario_Role { get; set; }
+        public int? Usuario_Role { get; set; }
+        
+        [AllowNull]
+        [JsonIgnore]
+        public int Usuario_Estado { get; set; }
 
         [AllowNull]
         [JsonIgnore]
@@ -64,7 +68,7 @@ namespace Datos.Modelos
         
         [AllowNull]
         [JsonIgnore]
-        public string? Usuario_Role { get; set; }
+        public int? Usuario_Role { get; set; }
 
         [AllowNull]
         [JsonIgnore]

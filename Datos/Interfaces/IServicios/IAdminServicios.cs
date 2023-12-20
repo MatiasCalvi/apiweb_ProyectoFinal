@@ -5,6 +5,7 @@ namespace Datos.Interfaces.IServicios
     public interface IAdminServicios
     {
         Task<List<UsuarioSalida>> ObtenerTodosLosUsuarios();
+        Task<List<CarritoSalida>> ObtenerCarritos();
         Task<bool> VerificarUsuarioHabilitado(int pId);
         Task<bool> VerificarUsuarioDeshabilitado(int pId);
         Task<bool> HabilitarUsuario(int pId);

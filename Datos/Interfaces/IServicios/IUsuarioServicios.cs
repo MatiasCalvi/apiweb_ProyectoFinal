@@ -7,7 +7,6 @@ namespace Datos.Interfaces.IServicios
     {
         Task<UsuarioSalida> ObtenerUsuarioPorID(int pId);
         Task<UsuarioSalida> ObtenerUsuarioPorEmail(string pEmail);
-        Task<bool> EsAdministrador(string pEmail);
         Task<UsuarioSalidaC> CrearNuevoUsuario(UsuarioCreacion pUsuario);
         Task<bool> ActualizarUsuario(int pId, UsuarioModif pUsuarioModif);
     }

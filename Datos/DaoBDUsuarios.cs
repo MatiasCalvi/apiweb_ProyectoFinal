@@ -4,24 +4,21 @@ using MySql.Data.MySqlClient;
 using Microsoft.Extensions.Options;
 using Configuracion;
 using Datos.Modelos.DTO;
-using Datos.Exceptions;
 using Datos.Interfaces.IDaos;
 using Datos.Modelos;
-using System.Data.Common;
+using Datos.Interfaces.IQuerys;
 
 namespace Datos
 {
     public class DaoBDUsuarios : IDaoBDUsuarios
     {
         private readonly string connectionString;
-        private const string obtenerUsuarioIDQuery = "SELECT * FROM usuarios WHERE Usuario_ID = @Usuario_ID";
-        private const string obtenerUsuarioEmailQuery = "SELECT * FROM usuarios WHERE Usuario_Email = @Usuario_Email";
-        private const string esAdministradorQuery = "SELECT COUNT(*) FROM email_admins WHERE EA_Email = @EA_Email";
-        private const string crearUsuarioQuery = "INSERT INTO usuarios(Usuario_Nombre, Usuario_Apellido, Usuario_Email, Usuario_Contra, Usuario_FCreacion, Usuario_Role) VALUES(@Usuario_Nombre, @Usuario_Apellido, @Usuario_Email, @Usuario_Contra, @Usuario_FCreacion, @Usuario_Role); SELECT* FROM usuarios WHERE Usuario_ID = LAST_INSERT_ID()";
-
-        public DaoBDUsuarios(IOptions<BDConfiguration> dbConfig)
+        private IUsuarioQuerys _usuariosQuery;
+        
+        public DaoBDUsuarios(IOptions<BDConfiguration> dbConfig, IUsuarioQuerys usuariosQuery)
         {
             connectionString = dbConfig.Value.ConnectionString;
+            _usuariosQuery = usuariosQuery;
         }
 
         private IDbConnection CreateConnection()
@@ -34,45 +31,35 @@ namespace Datos
         {
             using IDbConnection dbConnection = CreateConnection();
             dbConnection.Open();
-            return (await dbConnection.QueryAsync<UsuarioSalida>(obtenerUsuarioIDQuery, new { Usuario_ID = pId })).FirstOrDefault();
+            return (await dbConnection.QueryAsync<UsuarioSalida>(_usuariosQuery.obtenerUsuarioIDQuery, new { Usuario_ID = pId })).FirstOrDefault();
         }
 
         public async Task<UsuarioModif?> ObtenerUsuarioPorIDU(int pId)
         {
             using IDbConnection dbConnection = CreateConnection();
             dbConnection.Open();
-            return (await dbConnection.QueryAsync<UsuarioModif>(obtenerUsuarioIDQuery, new { Usuario_ID = pId })).FirstOrDefault();
+            return (await dbConnection.QueryAsync<UsuarioModif>(_usuariosQuery.obtenerUsuarioIDQuery, new { Usuario_ID = pId })).FirstOrDefault();
         }
 
         public async Task<UsuarioSalida> ObtenerUsuarioPorEmail(string pEmail)
         {   
             using IDbConnection dbConnection = CreateConnection();
             dbConnection.Open();
-            return await dbConnection.QueryFirstOrDefaultAsync<UsuarioSalida>(obtenerUsuarioEmailQuery, new { Usuario_Email = pEmail });   
+            return await dbConnection.QueryFirstOrDefaultAsync<UsuarioSalida>(_usuariosQuery.obtenerUsuarioEmailQuery, new { Usuario_Email = pEmail });   
         }
 
         public async Task<UsuarioModif> ObtenerUsuarioPorEmailU(string pEmail)
         {
             using IDbConnection dbConnection = CreateConnection();
             dbConnection.Open();
-            return await dbConnection.QueryFirstOrDefaultAsync<UsuarioModif>(obtenerUsuarioEmailQuery, new { Usuario_Email = pEmail }); 
-        }
-
-        public async Task<bool> EsAdministrador(string pEmail)
-        {
-            using IDbConnection dbConnection = CreateConnection();
-            dbConnection.Open();
-
-            int conteo = await dbConnection.ExecuteScalarAsync<int>(esAdministradorQuery, new { EA_Email = pEmail });
-
-            return conteo > 0;
+            return await dbConnection.QueryFirstOrDefaultAsync<UsuarioModif>(_usuariosQuery.obtenerUsuarioEmailQuery, new { Usuario_Email = pEmail }); 
         }
 
         public async Task<UsuarioSalidaC> CrearNuevoUsuario(UsuarioCreacion pUsuario)
         {
             using IDbConnection dbConnection = CreateConnection();
             dbConnection.Open();
-            return await dbConnection.QuerySingleAsync<UsuarioSalidaC>(crearUsuarioQuery, pUsuario);
+            return await dbConnection.QuerySingleAsync<UsuarioSalidaC>(_usuariosQuery.crearUsuarioQuery, pUsuario);
         }
 
         public async Task<bool> ActualizarUsuario(int pId, UsuarioModif pUsuarioModif)

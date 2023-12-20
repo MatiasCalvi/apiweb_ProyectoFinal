@@ -9,23 +9,21 @@ using Microsoft.AspNetCore.Mvc;
 namespace apiweb_ProyectoFinal.Controllers
 {
     [ApiController]
-    [Route("[controller]")]
-    [Authorize(Roles = "admin")]
+    [Route("Admin")]
+    [Authorize(Roles = "2")]
     public class AdminServiciosController : Controller
     {
         private IUsuarioServicios _usuarioServicios;
         private IAdminServicios _adminServicios;
         private IPublicacionServicios _publicacionServicios;
-        private IMetodosDeValidacion _metodosDeValidacion;
 
         private readonly ILogger<AdminServiciosController> _logger;
-        public AdminServiciosController(ILogger<AdminServiciosController> logger, IUsuarioServicios usuarioServicios, IAdminServicios adminServicios, IPublicacionServicios publicacionServicios, IMetodosDeValidacion metodosDeValidacion)
+        public AdminServiciosController(ILogger<AdminServiciosController> logger, IUsuarioServicios usuarioServicios, IAdminServicios adminServicios, IPublicacionServicios publicacionServicios)
         {
             _logger = logger;
             _usuarioServicios = usuarioServicios;
             _adminServicios = adminServicios;
             _publicacionServicios = publicacionServicios;
-            _metodosDeValidacion = metodosDeValidacion;
         }
 
         [HttpGet("ObtenerUsuarios")]
@@ -39,7 +37,8 @@ namespace apiweb_ProyectoFinal.Controllers
             }
             catch (Exception ex)
             {
-                return StatusCode(500, new { Msj = "Error durante la busqueda", Detalle = ex.Message });
+                Console.WriteLine(new { ErrorDetalle = ex.Message });
+                return StatusCode(500);
             }
         }
 
@@ -61,7 +60,8 @@ namespace apiweb_ProyectoFinal.Controllers
             }
             catch (Exception ex)
             {
-                return StatusCode(500, new { Msj = "Error durante la activación del usuario", Detalle = ex.Message });
+                Console.WriteLine(new { ErrorDetalle = ex.Message });
+                return StatusCode(500);
             }
         }
 
@@ -83,7 +83,8 @@ namespace apiweb_ProyectoFinal.Controllers
             }
             catch (Exception ex)
             {
-                return StatusCode(500, new { Msj = "Error durante la desactivación del usuario", Detalle = ex.Message });
+                Console.WriteLine(new { ErrorDetalle = ex.Message });
+                return StatusCode(500);
             }
         }
 
@@ -106,7 +107,8 @@ namespace apiweb_ProyectoFinal.Controllers
             }
             catch (Exception ex)
             {
-                return StatusCode(500, new { Msj = "Error durante el cambio de rol a admin", Detalle = ex.Message });
+                Console.WriteLine(new { ErrorDetalle = ex.Message });
+                return StatusCode(500);
             }
         }
 
@@ -129,7 +131,8 @@ namespace apiweb_ProyectoFinal.Controllers
             }
             catch (Exception ex)
             {
-                return StatusCode(500, new { Msj = "Error durante la asignación del rol 'usuario'", Detalle = ex.Message });
+                Console.WriteLine(new { ErrorDetalle = ex.Message });
+                return StatusCode(500);
             }
         }
 
@@ -154,12 +157,12 @@ namespace apiweb_ProyectoFinal.Controllers
             }
             catch (Exception ex)
             {
-                return StatusCode(500, new { Msj = "Error durante la actualización de la publicacion", Detalle = ex.Message });
+                Console.WriteLine(new { ErrorDetalle = ex.Message });
+                return StatusCode(500);
             }
         }
 
         [HttpPatch("PausarPublicacion")]
-        [Authorize]
         public async Task<IActionResult> PausarPublicacion([FromQuery] int publicacionID)
         {
             try
@@ -180,12 +183,12 @@ namespace apiweb_ProyectoFinal.Controllers
             }
             catch (Exception ex)
             {
-                return StatusCode(500, new { Msj = "Error durante la pausa de la publicacion", Detalle = ex.Message });
+                Console.WriteLine(new { ErrorDetalle = ex.Message });
+                return StatusCode(500);
             }
         }
 
         [HttpPatch("CancelarPublicacion")]
-        [Authorize]
         public async Task<IActionResult> CancelarPublicacion([FromQuery] int publicacionID)
         {
             try
@@ -205,12 +208,12 @@ namespace apiweb_ProyectoFinal.Controllers
             }
             catch (Exception ex)
             {
-                return StatusCode(500, new { Msj = "Error durante la pausa de la publicacion", Detalle = ex.Message });
+                Console.WriteLine(new { ErrorDetalle = ex.Message });
+                return StatusCode(500);
             }
         }
 
         [HttpPatch("ActivarPublicacion")]
-        [Authorize]
         public async Task<IActionResult> ActivarPublicacion([FromQuery] int publicacionID)
         {
             try
@@ -231,7 +234,25 @@ namespace apiweb_ProyectoFinal.Controllers
             }
             catch (Exception ex)
             {
-                return StatusCode(500, new { Msj = "Error durante la pausa de la publicacion", Detalle = ex.Message });
+                Console.WriteLine(new { ErrorDetalle = ex.Message });
+                return StatusCode(500);
+            }
+        }
+
+        [HttpPost("ObtenerCarritos")]
+        public async Task<IActionResult> ObtenerCarritos()
+        {
+            try
+            {
+                List<CarritoSalida> lista = await _adminServicios.ObtenerCarritos();
+
+                return Ok(lista);
+
+            }
+            catch (Exception ex)
+            {
+                Console.WriteLine(new { ErrorDetalle = ex.Message });
+                return StatusCode(500);
             }
         }
     }

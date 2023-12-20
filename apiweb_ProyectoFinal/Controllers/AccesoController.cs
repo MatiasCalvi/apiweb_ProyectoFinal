@@ -8,7 +8,7 @@ using Microsoft.AspNetCore.Mvc;
 namespace apiweb_ProyectoFinal.Controllers
 {
     [ApiController]
-    [Route("[controller]")]
+    [Route("Acceso")]
     public class AccesoController : Controller
     {
         private IUsuarioServicios _usuarioServicios;
@@ -36,7 +36,7 @@ namespace apiweb_ProyectoFinal.Controllers
 
                 var token = _metodosDeValidacion.GenerarTokenAcceso(usuarioSalida);
 
-                var refreshToken = await _metodosDeValidacion.GenerarYGuardarRefreshToken(usuarioSalida.Usuario_ID, usuarioSalida.Usuario_Role);
+                var refreshToken = await _metodosDeValidacion.GenerarYGuardarRefreshToken(usuarioSalida.Usuario_ID, usuarioSalida.Usuario_Role.ToString());
 
                 return Ok(new { Token = token, RefreshToken = refreshToken, Msj = "Inicio de Sesion Exitoso" });
 

@@ -68,7 +68,7 @@ namespace Datos.Validaciones
                         Usuario_Nombre = usuario.Usuario_Nombre,
                         Usuario_Apellido = usuario.Usuario_Apellido,
                         Usuario_Email = usuario.Usuario_Email,
-                        Usuario_Role = usuario.Usuario_Role
+                        Usuario_Role = (int)usuario.Usuario_Role
                     };
                     return usuarioSalida;
                 }
@@ -123,7 +123,7 @@ namespace Datos.Validaciones
             var claims = new List<Claim>
                 {
                     new Claim(ClaimTypes.Sid, pUsuario.Usuario_ID.ToString()),
-                    new Claim(ClaimTypes.Role, pUsuario.Usuario_Role),
+                    new Claim(ClaimTypes.Role, pUsuario.Usuario_Role.ToString()),
                     new Claim(ClaimTypes.Name, pUsuario.Usuario_Nombre),
                     new Claim(ClaimTypes.Email, pUsuario.Usuario_Email),
                 };

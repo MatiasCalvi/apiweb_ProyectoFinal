@@ -30,12 +30,6 @@ namespace Datos.Servicios
             return usuario;
         }
 
-        public async Task<bool> EsAdministrador(string pEmail)
-        {
-            bool result = await _daoBDUsuarios.EsAdministrador(pEmail);
-            return result;
-        }
-
         public async Task<UsuarioSalidaC> CrearNuevoUsuario(UsuarioCreacion pUsuario)
         {
             string hashedPassword = await _metodosDeValidacion.HashContra(pUsuario.Usuario_Contra);

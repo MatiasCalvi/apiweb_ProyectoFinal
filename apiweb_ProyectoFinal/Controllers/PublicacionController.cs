@@ -9,7 +9,7 @@ using Microsoft.AspNetCore.Mvc;
 namespace TuProyecto.Controllers
 {
     [ApiController]
-    [Route("[controller]")]
+    [Route("Publicacion")]
 
     public class PublicacionServiciosController : ControllerBase
     {
@@ -78,6 +78,9 @@ namespace TuProyecto.Controllers
             {
                 if (!ModelState.IsValid) return BadRequest(ModelState);
 
+                int usuarioId = await _metodosDeValidacion.ObtenerUsuarioIDToken();
+                publicacion.Public_UsuarioID = usuarioId;
+
                 PublicacionSalidaC publicacionSalida = await _publicacionServicios.CrearPublicacion(publicacion);
 
                 if (publicacionSalida != null)
@@ -89,7 +92,8 @@ namespace TuProyecto.Controllers
             }
             catch (Exception ex)
             {
-                return StatusCode(500, new { Mensaje = "Error interno del servidor.", Detalle = ex.Message });
+                Console.WriteLine(new { ErrorDetalle = ex.Message });
+                return StatusCode(500);
             }
         }
 
@@ -116,7 +120,8 @@ namespace TuProyecto.Controllers
             }
             catch (Exception ex)
             {
-                return StatusCode(500, new { Msj = "Error durante la actualización de la publicacion", Detalle = ex.Message });
+                Console.WriteLine(new { ErrorDetalle = ex.Message });
+                return StatusCode(500);
             }
         }
 
@@ -146,7 +151,8 @@ namespace TuProyecto.Controllers
             }
             catch (Exception ex)
             {
-                return StatusCode(500, new { Msj = "Error durante la pausa de la publicacion", Detalle = ex.Message });
+                Console.WriteLine(new { ErrorDetalle = ex.Message });
+                return StatusCode(500);
             }
         }
 
@@ -175,7 +181,8 @@ namespace TuProyecto.Controllers
             }
             catch (Exception ex)
             {
-                return StatusCode(500, new { Msj = "Error durante la pausa de la publicacion", Detalle = ex.Message });
+                Console.WriteLine(new { ErrorDetalle = ex.Message });
+                return StatusCode(500);
             }
         }
 
@@ -205,7 +212,8 @@ namespace TuProyecto.Controllers
             }
             catch (Exception ex)
             {
-                return StatusCode(500, new { Msj = "Error durante la pausa de la publicacion", Detalle = ex.Message });
+                Console.WriteLine(new { ErrorDetalle = ex.Message });
+                return StatusCode(500);
             }
         }
     }

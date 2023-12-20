@@ -2,6 +2,8 @@
 using Dapper;
 using Datos.Exceptions;
 using Datos.Interfaces.IDaos;
+using Datos.Interfaces.IQuerys;
+using Datos.Querys;
 using Microsoft.Extensions.Options;
 using MySql.Data.MySqlClient;
 using System.Data;
@@ -11,14 +13,12 @@ namespace Datos
     public class DaoBDUsuarioAcceso : IDaoBDUsuarioAcceso
     {
         private readonly string connectionString;
-        private const string existeTokenQuery = "SELECT RefreshTU_Token FROM refreshtokenu WHERE refreshTU_UsuaID = @Usuario_ID";
-        private const string actualizarTokenQuery = "UPDATE refreshtokenu SET RefreshTU_Token = @RefreshToken WHERE refreshTU_UsuaID = @Usuario_ID";
-        private const string crearTokenQuery = "INSERT INTO refreshtokenu (RefreshTU_UsuaID, RefreshTU_Token) VALUES (@Usuario_ID, @RefreshToken)";
-        private const string eliminarTokenQuery = "DELETE FROM refreshtokenu WHERE RefreshTU_UsuaID = @Usuario_ID";
+        private IAccesoQuerys _accesoQuerys;
 
-        public DaoBDUsuarioAcceso(IOptions<BDConfiguration> dbConfig)
+        public DaoBDUsuarioAcceso(IOptions<BDConfiguration> dbConfig, IAccesoQuerys accesoQuerys)
         {
             connectionString = dbConfig.Value.ConnectionString;
+            _accesoQuerys = accesoQuerys;
         }
 
         private IDbConnection CreateConnection()
@@ -35,7 +35,7 @@ namespace Datos
                 {
                     dbConnection.Open();
 
-                    var refreshToken = await dbConnection.QueryFirstOrDefaultAsync<string>(existeTokenQuery, new { Usuario_ID = pUsuarioId }
+                    var refreshToken = await dbConnection.QueryFirstOrDefaultAsync<string>(_accesoQuerys.existeTokenQuery, new { Usuario_ID = pUsuarioId }
                     );
 
                     return refreshToken;
@@ -54,15 +54,15 @@ namespace Datos
                 using IDbConnection dbConnection = CreateConnection();
                 dbConnection.Open();
 
-                var existingToken = await dbConnection.QueryFirstOrDefaultAsync<string>(existeTokenQuery, new { Usuario_ID = pUsuarioId });
+                var existingToken = await dbConnection.QueryFirstOrDefaultAsync<string>(_accesoQuerys.existeTokenQuery, new { Usuario_ID = pUsuarioId });
 
                 if (existingToken != null)
                 {
-                    await dbConnection.ExecuteAsync(actualizarTokenQuery, new { Usuario_ID = pUsuarioId, RefreshToken = pRefreshToken });
+                    await dbConnection.ExecuteAsync(_accesoQuerys.actualizarTokenQuery, new { Usuario_ID = pUsuarioId, RefreshToken = pRefreshToken });
                 }
                 else
                 {
-                    await dbConnection.ExecuteAsync(crearTokenQuery, new { Usuario_ID = pUsuarioId, RefreshToken = pRefreshToken });
+                    await dbConnection.ExecuteAsync(_accesoQuerys.crearTokenQuery, new { Usuario_ID = pUsuarioId, RefreshToken = pRefreshToken });
                 }
             }
             catch (Exception ex)
@@ -77,7 +77,7 @@ namespace Datos
             {
                 using IDbConnection dbConnection = CreateConnection();
                 dbConnection.Open();
-                await dbConnection.ExecuteAsync(eliminarTokenQuery, new { Usuario_ID = pUsuarioId });
+                await dbConnection.ExecuteAsync(_accesoQuerys.eliminarTokenQuery, new { Usuario_ID = pUsuarioId });
             }
             catch (Exception ex)
             {
