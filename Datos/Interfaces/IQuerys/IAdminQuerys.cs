@@ -3,6 +3,7 @@
     public interface IAdminQuerys
     {
         public string obtenerUsuariosQuery {  get; }
+        public string obtenerPublicacionesQuery { get; }
         public string obtenerCarritosQuery { get; }
         public string verificarUsuarioDeshabilitadoQuery { get; }
         public string verificarUsuarioHabilitadoQuery { get; }

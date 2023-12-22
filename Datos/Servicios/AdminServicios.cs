@@ -2,6 +2,7 @@
 using Datos.Interfaces.IDaos;
 using Datos.Interfaces.IServicios;
 using Datos.Interfaces.IValidaciones;
+using Datos.Modelos;
 using Datos.Modelos.DTO;
 
 namespace Datos.Servicios
@@ -9,15 +10,22 @@ namespace Datos.Servicios
     public class AdminServicios : IAdminServicios
     {
         private IDaoBDAdmins _daoBDAdmins;
+        private IPublicacionServicios _publicacionServicios;
 
-        public AdminServicios(IDaoBDAdmins daoBDAdmins)
+        public AdminServicios(IDaoBDAdmins daoBDAdmins, IPublicacionServicios publicacionServicios)
         {
             _daoBDAdmins = daoBDAdmins;
+            _publicacionServicios = publicacionServicios;
         }
 
         public async Task<List<UsuarioSalida>> ObtenerTodosLosUsuarios()
         {
             return await _daoBDAdmins.ObtenerTodosLosUsuarios();
+        }
+
+        public async Task<List<PublicacionSalida>> ObtenerPublicaciones()
+        {
+            return await _daoBDAdmins.ObtenerPublicaciones();
         }
 
         public async Task<List<CarritoSalida>> ObtenerCarritos()
@@ -87,5 +95,32 @@ namespace Datos.Servicios
             return resultado;
         }
 
+        public async Task<bool> EditarPublicacion(int pId, PublicacionModifA pPublicacionModif)
+        {
+            PublicacionSalidaM publicacionActual = await _publicacionServicios.ObtenerPublicacionPorIDM(pId);
+            DateTime fechaActual = DateTime.Now;
+
+            publicacionActual.Public_UsuarioID = pPublicacionModif.Public_UsuarioID ?? publicacionActual.Public_UsuarioID;
+            publicacionActual.Public_Nombre = pPublicacionModif.Public_Nombre ?? publicacionActual.Public_Nombre;
+            publicacionActual.Public_Descripcion = pPublicacionModif.Public_Descripcion ?? publicacionActual.Public_Descripcion;
+            publicacionActual.Public_Precio = pPublicacionModif.Public_Precio ?? publicacionActual.Public_Precio;
+            publicacionActual.Public_Imagen = pPublicacionModif.Public_Imagen ?? publicacionActual.Public_Imagen;
+            publicacionActual.Public_Stock = pPublicacionModif.Public_Stock ?? publicacionActual.Public_Stock;
+
+            PublicacionModifA publicacion = new PublicacionModifA
+            {
+                Public_UsuarioID = publicacionActual.Public_UsuarioID,
+                Public_Nombre = publicacionActual.Public_Nombre,
+                Public_Descripcion = publicacionActual.Public_Descripcion,
+                Public_Precio = publicacionActual.Public_Precio,
+                Public_Imagen = publicacionActual.Public_Imagen,
+                Public_Stock = publicacionActual.Public_Stock,
+                Public_FModif = fechaActual
+            };
+
+            bool actualizado = await _daoBDAdmins.EditarPublicacion(pId, publicacion);
+
+            return actualizado;
+        }
     }
 }

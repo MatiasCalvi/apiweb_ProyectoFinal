@@ -49,8 +49,8 @@ namespace Datos
                                                                         obj.Public_Stock);
                 
                 CarritoSalida carrito = new CarritoSalida(obj.Carrito_UsuarioID, 
-                                                            obj.Carrito_PID, 
-                                                            obj.Carrito_Estado, 
+                                                            obj.Carrito_PID,
+                                                            obj.Carrito_ProdUnidades,
                                                             publicacion);
                 
                 listaCarritoSalida.Add(carrito);
@@ -59,39 +59,72 @@ namespace Datos
         }
 
 
-        public async Task<bool> Agregar(int pUsuarioID, int pPublicacionID)
+        public async Task<bool> Agregar(int pUsuarioID, Carrito pCarrito)
         {
             try
             {
                 using IDbConnection dbConnection = CreateConnection();
                 dbConnection.Open();
                 
-                int result = await dbConnection.ExecuteAsync(_carritoQuery.agregarProducto, new { Carrito_UsuarioID = pUsuarioID, Carrito_PID = pPublicacionID });
+                int result = await dbConnection.ExecuteAsync(_carritoQuery.agregarProducto, new { Carrito_UsuarioID = pUsuarioID, Carrito_PID = pCarrito.Carrito_PID, Carrito_ProdUnidades = pCarrito.Carrito_ProdUnidades });
                 return result > 0;
             }
             catch (Exception ex)
             {
-                throw new DatabaseTransactionException($"Error al crear una nueva publicación: {ex.Message}");
+                throw new DatabaseTransactionException($"Error al agregar un nuevo producto al carrito: {ex.Message}");
             }
         }
 
-        public async Task<bool> Comprar(int pUsuarioID, int pPublicacionID)
+        public async Task<bool> AgregarAlHistorial(Historia pHistoriaCompra)
         {
             try
             {
                 using IDbConnection dbConnection = CreateConnection();
                 dbConnection.Open();
 
-                int result = await dbConnection.ExecuteAsync(_carritoQuery.comprarQuery, new { Carrito_UsuarioID = pUsuarioID, Carrito_PID = pPublicacionID });
+                var result = await dbConnection.ExecuteAsync(_carritoQuery.agregarAlHistorialQuery, pHistoriaCompra );
+
                 return result > 0;
             }
             catch (Exception ex)
             {
-                throw new DatabaseTransactionException($"Error al crear una nueva publicación: {ex.Message}");
+                throw new DatabaseTransactionException($"Error al comprar el producto: {ex.Message}"); 
             }
         }
 
-        
+        public async Task<bool> Eliminar(int pUsuarioID, int pPublicacionID)
+        {
+            try
+            {
+                using IDbConnection dbConnection = CreateConnection();
+                dbConnection.Open();
+
+                int result = await dbConnection.ExecuteAsync(_carritoQuery.eliminarQuery, new { Carrito_UsuarioID = pUsuarioID, Carrito_PID = pPublicacionID });
+
+                return result > 0;
+            }
+            catch (Exception ex)
+            {
+                throw new DatabaseTransactionException($"Error al eliminar el producto: {ex.Message}");
+            }
+        }
+
+        public async Task<bool> EliminarTodo(int pUsuarioID)
+        {
+            try
+            {
+                using IDbConnection dbConnection = CreateConnection();
+                dbConnection.Open();
+
+                int result = await dbConnection.ExecuteAsync(_carritoQuery.eliminarTodoQuery, new { Carrito_UsuarioID = pUsuarioID});
+
+                return result > 0;
+            }
+            catch (Exception ex)
+            {
+                throw new DatabaseTransactionException($"Error al eliminar el producto: {ex.Message}");
+            }
+        }
 
         public async Task<bool> Duplicado(int pUsuarioID, int pPublicacionID)
         {

@@ -5,6 +5,8 @@
         public string obtenerPublicacionesQuery { get; }
         public string obtenerPublicacionIDQuery { get; }
         public string obtenerPublicacionesDeUnUsuarioQuery { get; }
+        public string obtenerStockPublicacionQuery { get; }
+        public string proceBuscar { get;}
         public string crearPublicacionQuery { get; }
         public string ActivarPublicQuery { get; }
         public string PausarPublicQuery { get; }

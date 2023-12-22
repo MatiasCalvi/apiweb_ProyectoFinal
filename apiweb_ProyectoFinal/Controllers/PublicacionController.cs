@@ -5,6 +5,7 @@ using Datos.Modelos.DTO;
 using Datos.Servicios;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
+using System.Text.Json;
 
 namespace TuProyecto.Controllers
 {
@@ -23,11 +24,26 @@ namespace TuProyecto.Controllers
         }
 
         [HttpGet("ObtenerPublicaciones")]
-        public async Task<IActionResult> ObtenerPublicaciones() 
+        public async Task<IActionResult> ObtenerPublicaciones()
         {
             try
             {
                 List<PublicacionSalida> publicaciones = await _publicacionServicios.ObtenerPublicaciones();
+                return Ok(publicaciones);
+            }
+            catch (Exception ex)
+            {
+                return StatusCode(500, new { Msj = "Error durante la busqueda", Detalle = ex.Message });
+            }
+        }
+
+        [HttpGet("Buscar")]
+        public async Task<IActionResult> Buscar([FromQuery] string palabraClave)
+        {
+            try
+            {
+                List<PublicacionSalida> publicaciones = await _publicacionServicios.Buscar(palabraClave);
+
                 return Ok(publicaciones);
             }
             catch (Exception ex)
@@ -53,9 +69,9 @@ namespace TuProyecto.Controllers
             }
         }
 
-        [HttpGet("PublicacionesDeUnUsuario")] //--> esto le sirve al usuario para ver sus publicaciones
+        [HttpGet("Publicaciones")] 
         [Authorize]
-        public async Task<IActionResult> PublicacionesDeUnUsuario()
+        public async Task<IActionResult> Publicaciones()
         {
             try
             {
@@ -100,7 +116,7 @@ namespace TuProyecto.Controllers
         [HttpPatch("EditarPublicacion")]
         [Authorize]
 
-        public async Task<IActionResult> EditarPublicacion([FromQuery]int publicacionID,[FromBody] PublicacionModif publicacionEntrada) // el Admin deberia poder modificar el UsuarioID de la publicacion cosa que un usuario no puede hacer
+        public async Task<IActionResult> EditarPublicacion([FromQuery]int publicacionID,[FromBody] PublicacionModif publicacionEntrada) 
         {
             try
             {
@@ -188,13 +204,11 @@ namespace TuProyecto.Controllers
 
         [HttpPatch("ActivarPublicacion")]
         [Authorize]
-        public async Task<IActionResult> ActivarPublicacion([FromQuery] int publicacionID)
+        public async Task<IActionResult> ActivarPublicacion([FromQuery] int publicacionID,[FromBody] PublicacionRelanzada nuevoStock )
         {
             try
             {
                 PublicacionSalida publicacion = await _publicacionServicios.ObtenerPublicacionPorID(publicacionID);
-                
-                int usuarioId = await _metodosDeValidacion.ObtenerUsuarioIDToken();
 
                 bool yaActivada = await _publicacionServicios.VerificarPublicActivada(publicacionID);
 
@@ -203,7 +217,7 @@ namespace TuProyecto.Controllers
                     return NotFound(new { Mensaje = $"Publicacion con ID {publicacionID} no encontrada o ya se esta activada" });
                 }
 
-                bool resultado = await _publicacionServicios.ActivarPublicacion(publicacionID, usuarioId);
+                bool resultado = await _publicacionServicios.ActivarPublicacion(publicacionID, nuevoStock.Public_Stock);
                 
                 if (!resultado) return Forbid();
 

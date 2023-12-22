@@ -2,6 +2,7 @@
 using Datos.Interfaces.IDaos;
 using Datos.Modelos;
 using Datos.Modelos.DTO;
+using Datos.Interfaces.IValidaciones;
 
 
 namespace Datos.Servicios
@@ -9,10 +10,12 @@ namespace Datos.Servicios
     public class PublicacionServicios : IPublicacionServicios
     {
         private IDaoBDPublicaciones _daoBDPublicaciones;
+        private IMetodosDeValidacion _metodosDeValidacion;
 
-        public PublicacionServicios(IDaoBDPublicaciones daoBDPublicaciones)
+        public PublicacionServicios(IDaoBDPublicaciones daoBDPublicaciones,IMetodosDeValidacion metodosDeValidacion)
         {
             _daoBDPublicaciones = daoBDPublicaciones;
+            _metodosDeValidacion = metodosDeValidacion;
         }
 
         public async Task<List<PublicacionSalida>> ObtenerPublicaciones()
@@ -25,9 +28,24 @@ namespace Datos.Servicios
             return await _daoBDPublicaciones.ObtenerPublicacionPorID(pId);
         }
 
-        internal async Task<PublicacionSalidaM> ObtenerPublicacionPorIDM(int pId)
+        public async Task<PublicacionSalidaM> ObtenerPublicacionPorIDM(int pId)
         {
             return await _daoBDPublicaciones.ObtenerPublicacionPorIDM(pId);
+        }
+
+        public async Task<PublicacionSalidaE> ObtenerPublicacionPorIDE(int pId)
+        {
+            return await _daoBDPublicaciones.ObtenerPublicacionPorIDE(pId);
+        }
+
+        public async Task<PublicacionSalida> ObtenerStock(int pId)
+        {
+            return await _daoBDPublicaciones.ObtenerStock(pId);
+        }
+
+        public async Task<List<PublicacionSalida>>Buscar(string pPalabraClave)
+        {
+            return await _daoBDPublicaciones.Buscar(pPalabraClave);
         }
 
         public async Task<List<PublicacionSalida>> PublicacionesDeUnUsuario(int pUsuarioID)
@@ -55,9 +73,20 @@ namespace Datos.Servicios
             return resultado;
         }
 
-        public async Task<bool> ActivarPublicacion(int pId, int pUsuarioID)
+        public async Task<bool> ActivarPublicacion(int pId, int pNuevoStock)
         {
-            bool resultado = await _daoBDPublicaciones.ActivarPublicacion(pId, pUsuarioID);
+            int usuarioID = await _metodosDeValidacion.ObtenerUsuarioIDToken();
+            
+            PublicacionModif nuevoStock = new PublicacionModif
+            {
+                Public_Stock = pNuevoStock
+            };
+            bool stock = await _daoBDPublicaciones.EditarPublicacion(pId, nuevoStock);
+            
+            if(!stock) return false;
+            
+            bool resultado = await _daoBDPublicaciones.ActivarPublicacion(pId, usuarioID);
+
             return resultado;
         }
 
@@ -122,34 +151,6 @@ namespace Datos.Servicios
             };
 
             bool actualizado = await _daoBDPublicaciones.EditarPublicacion(pId, publicacion);
-
-            return actualizado;
-        }
-
-        public async Task<bool> EditarPublicacionAdmin(int pId, PublicacionModifA pPublicacionModif)
-        {
-            PublicacionSalidaM publicacionActual = await ObtenerPublicacionPorIDM(pId);
-            DateTime fechaActual = DateTime.Now;
-
-            publicacionActual.Public_UsuarioID = pPublicacionModif.Public_UsuarioID ?? publicacionActual.Public_UsuarioID;
-            publicacionActual.Public_Nombre = pPublicacionModif.Public_Nombre ?? publicacionActual.Public_Nombre;
-            publicacionActual.Public_Descripcion = pPublicacionModif.Public_Descripcion ?? publicacionActual.Public_Descripcion;
-            publicacionActual.Public_Precio = pPublicacionModif.Public_Precio ?? publicacionActual.Public_Precio;
-            publicacionActual.Public_Imagen = pPublicacionModif.Public_Imagen ?? publicacionActual.Public_Imagen;
-            publicacionActual.Public_Stock = pPublicacionModif.Public_Stock ?? publicacionActual.Public_Stock;
-
-            PublicacionModifA publicacion = new PublicacionModifA
-            {   
-                Public_UsuarioID = publicacionActual.Public_UsuarioID,
-                Public_Nombre = publicacionActual.Public_Nombre,
-                Public_Descripcion = publicacionActual.Public_Descripcion,
-                Public_Precio = publicacionActual.Public_Precio,
-                Public_Imagen = publicacionActual.Public_Imagen,
-                Public_Stock = publicacionActual.Public_Stock,
-                Public_FModif = fechaActual
-            };
-
-            bool actualizado = await _daoBDPublicaciones.EditarPublicacionAdmin(pId, publicacion);
 
             return actualizado;
         }

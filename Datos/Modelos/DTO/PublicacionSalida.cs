@@ -30,9 +30,15 @@ namespace Datos.Modelos.DTO
         public DateTime Public_FCreacion {  get; set; }
         public PublicacionSalidaC() { }
     }
+    
     public class PublicacionSalidaM : PublicacionSalida
     {
         public DateTime Public_FModif { get; set; }
         public PublicacionSalidaM() { }
+    }
+
+    public class PublicacionSalidaE : PublicacionSalida
+    {
+        public int Public_Estado { get; set; }
     }
 }

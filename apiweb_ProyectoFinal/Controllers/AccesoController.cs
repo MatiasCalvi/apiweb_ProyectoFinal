@@ -38,12 +38,13 @@ namespace apiweb_ProyectoFinal.Controllers
 
                 var refreshToken = await _metodosDeValidacion.GenerarYGuardarRefreshToken(usuarioSalida.Usuario_ID, usuarioSalida.Usuario_Role.ToString());
 
-                return Ok(new { Token = token, RefreshToken = refreshToken, Msj = "Inicio de Sesion Exitoso" });
+                return Ok(new { Token = token, RefreshToken = refreshToken, Msj = $"Bienvenido {usuarioSalida.Usuario_Nombre}" });
 
             }
             catch (Exception ex)
             {
-                return BadRequest(new { Msj = "Error al iniciar sesion", Detalle = ex.Message });
+                Console.WriteLine(new { ErrorDetalle = ex.Message });
+                return StatusCode(500);
             }
         }
 
@@ -59,11 +60,12 @@ namespace apiweb_ProyectoFinal.Controllers
 
                 _metodosDeValidacion.EliminarCookie("RefreshToken");
 
-                return Ok("Cierre de sesión exitoso");
+                return Ok(new { Mensaje = "Cierre de sesión exitoso" });
             }
             catch (Exception ex)
             {
-                return BadRequest(new { Msj = "Error al cerrar sesión", Detalle = ex.Message });
+                Console.WriteLine(new { ErrorDetalle = ex.Message });
+                return StatusCode(500);
             }
         }
 
@@ -99,7 +101,8 @@ namespace apiweb_ProyectoFinal.Controllers
             }
             catch (Exception ex)
             {
-                return StatusCode(500, "Error Interno del Servidor");
+                Console.WriteLine(new { ErrorDetalle = ex.Message });
+                return StatusCode(500);
             }
         }
     }

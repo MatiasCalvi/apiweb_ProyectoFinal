@@ -53,6 +53,11 @@ namespace Datos.Modelos
         public DateTime? Public_FModif { get; set; }
     }
 
+    public class PublicacionRelanzada
+    {
+        public int Public_Stock { get; set; }
+    }
+
     public class PublicacionModifA 
     {
         public int? Public_UsuarioID { get; set; }

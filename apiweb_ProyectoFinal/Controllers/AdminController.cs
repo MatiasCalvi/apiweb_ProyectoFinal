@@ -11,14 +11,15 @@ namespace apiweb_ProyectoFinal.Controllers
     [ApiController]
     [Route("Admin")]
     [Authorize(Roles = "2")]
-    public class AdminServiciosController : Controller
+    
+    public class AdminController : Controller
     {
         private IUsuarioServicios _usuarioServicios;
         private IAdminServicios _adminServicios;
         private IPublicacionServicios _publicacionServicios;
 
-        private readonly ILogger<AdminServiciosController> _logger;
-        public AdminServiciosController(ILogger<AdminServiciosController> logger, IUsuarioServicios usuarioServicios, IAdminServicios adminServicios, IPublicacionServicios publicacionServicios)
+        private readonly ILogger<AdminController> _logger;
+        public AdminController(ILogger<AdminController> logger, IUsuarioServicios usuarioServicios, IAdminServicios adminServicios, IPublicacionServicios publicacionServicios)
         {
             _logger = logger;
             _usuarioServicios = usuarioServicios;
@@ -39,6 +40,20 @@ namespace apiweb_ProyectoFinal.Controllers
             {
                 Console.WriteLine(new { ErrorDetalle = ex.Message });
                 return StatusCode(500);
+            }
+        }
+
+        [HttpGet("ObtenerPublicaciones")]
+        public async Task<IActionResult> ObtenerPublicaciones()
+        {
+            try
+            {
+                List<PublicacionSalida> publicaciones = await _adminServicios.ObtenerPublicaciones();
+                return Ok(publicaciones);
+            }
+            catch (Exception ex)
+            {
+                return StatusCode(500, new { Msj = "Error durante la busqueda", Detalle = ex.Message });
             }
         }
 
@@ -137,7 +152,7 @@ namespace apiweb_ProyectoFinal.Controllers
         }
 
         [HttpPatch("EditarPublicacion")]
-        public async Task<IActionResult> EditarPublicacion([FromQuery] int publicacionID, [FromBody] PublicacionModifA publicacionEntrada) // el Admin deberia poder modificar el UsuarioID de la publicacion cosa que un usuario no puede hacer
+        public async Task<IActionResult> EditarPublicacion([FromQuery] int publicacionID, [FromBody] PublicacionModifA publicacionEntrada) 
         {
             try
             {
@@ -150,7 +165,7 @@ namespace apiweb_ProyectoFinal.Controllers
 
                 if (publicacion == null) return BadRequest(new { Mensaje = "Publicacion no encontrada" });
 
-                bool publicacionModif = await _publicacionServicios.EditarPublicacionAdmin(publicacionID, publicacionEntrada);
+                bool publicacionModif = await _adminServicios.EditarPublicacion(publicacionID, publicacionEntrada);
                 
                 return NoContent();
 

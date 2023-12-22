@@ -1,10 +1,12 @@
-﻿using Datos.Modelos.DTO;
+﻿using Datos.Modelos;
+using Datos.Modelos.DTO;
 using System.Threading.Tasks;
 
 namespace Datos.Interfaces.IDaos
 {
     public interface IDaoBDAdmins 
     {
+        Task<List<PublicacionSalida>> ObtenerPublicaciones();
         Task<List<UsuarioSalida>> ObtenerTodosLosUsuarios();
         Task<List<CarritoSalida>> ObtenerCarritos();
         Task<bool> VerificarUsuarioDeshabilitado(int usuarioId);
@@ -13,5 +15,6 @@ namespace Datos.Interfaces.IDaos
         Task<bool> DeshabilitarUsuario(int pUsuarioId);
         Task<bool> AsignarRolAAdmin(int pUsuarioId);
         Task<bool> AsignarRolAUsuario(int usuarioId);
+        Task<bool> EditarPublicacion(int pId, PublicacionModifA pPublicacionModif);
     }
 }
