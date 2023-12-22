@@ -11,6 +11,7 @@ namespace apiweb_ProyectoFinal.Controllers
     [ApiController]
     [Route("Admin")]
     [Authorize(Roles = "2")]
+    
     public class AdminController : Controller
     {
         private IUsuarioServicios _usuarioServicios;
@@ -149,7 +150,6 @@ namespace apiweb_ProyectoFinal.Controllers
                 return StatusCode(500);
             }
         }
-
 
         [HttpPatch("EditarPublicacion")]
         public async Task<IActionResult> EditarPublicacion([FromQuery] int publicacionID, [FromBody] PublicacionModifA publicacionEntrada) 
