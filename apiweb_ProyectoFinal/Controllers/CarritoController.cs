@@ -1,8 +1,10 @@
 ﻿using Datos.Interfaces.IServicios;
 using Datos.Interfaces.IValidaciones;
 using Datos.Modelos.DTO;
+using Datos.Modelos;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
+using System.Net;
 
 namespace apiweb_ProyectoFinal.Controllers
 {
@@ -43,19 +45,21 @@ namespace apiweb_ProyectoFinal.Controllers
         }
 
         [HttpPost("AgregarAlCarrito")]
-        public async Task<IActionResult> AgregarAlCarrito([FromBody] int idPublicacion)
+        public async Task<IActionResult> AgregarAlCarrito([FromBody] Carrito carrito)
         {
             try
             {
                 int usuarioID = await _metodosDeValidacion.ObtenerUsuarioIDToken();
 
-                PublicacionSalida publicacionExiste = await _publicacionServicios.ObtenerPublicacionPorID(idPublicacion);
+                PublicacionSalida publicacionExiste = await _publicacionServicios.ObtenerPublicacionPorID(carrito.Carrito_PID);
                 if (publicacionExiste == null) return NotFound(new {Mensaje = "publicacion no encontrada"});
 
-                bool existe = await _carritoServicios.Duplicado(usuarioID, idPublicacion);
+                if (publicacionExiste.Public_Stock < carrito.Carrito_ProdUnidades) return BadRequest(new { Mensaje = "Unidades insuficientes" }); 
+
+                bool existe = await _carritoServicios.Duplicado(usuarioID, carrito.Carrito_PID);
                 if (existe) return BadRequest(new {Mensaje = "ya existe dicha publicacion en su carrito" });
 
-                bool resultado = await _carritoServicios.Agregar(usuarioID, idPublicacion);
+                bool resultado = await _carritoServicios.Agregar(usuarioID, carrito);
 
                 if (resultado == null) return BadRequest(new { Mensaje = "No se pudo agregar al carrito" });
 
@@ -69,27 +73,104 @@ namespace apiweb_ProyectoFinal.Controllers
             }
         }
 
-        //[HttpPatch("Comprar")]
-        //public async Task<IActionResult> Comprar([FromBody] int idPublicacion)
-        //{
-        //    try
-        //    {
-        //        int usuarioID = await _metodosDeValidacion.ObtenerUsuarioIDToken();
+        [HttpPatch("Comprar")]
+        public async Task<IActionResult> Comprar([FromBody] Carrito carrito)
+        {
+            try
+            {
+                PublicacionSalida publicacionExiste = await _publicacionServicios.ObtenerPublicacionPorID(carrito.Carrito_PID);
                 
-        //        PublicacionSalida publicacionExiste = await _publicacionServicios.ObtenerPublicacionPorID(idPublicacion);
-        //        if (publicacionExiste == null) return NotFound(new { Mensaje = "publicacion no encontrada" });
+                if (publicacionExiste == null) return NotFound(new { Mensaje = "publicacion no encontrada" });
 
-        //        bool resultado = await _carritoServicios.Comprar(usuarioID,idPublicacion);
+                bool stock = await _carritoServicios.ReducirStock(carrito.Carrito_PID, carrito.Carrito_ProdUnidades);
+
+                if (!stock) return BadRequest(new{ Mensaje = "No hay stock" });
+
+                bool compra = await _carritoServicios.AgregarAlHistorial(carrito.Carrito_PID, carrito.Carrito_ProdUnidades);
+
+                if (!compra) return BadRequest(new {Mensaje = "No se ha podido efectuar la compra" });
+
+                return Ok(new { Mensaje = "Se ha comprado satisfactoriamente" });
+            }
+            catch (Exception ex)
+            {
+                Console.WriteLine(new { ErrorDetalle = ex.Message });
+                return StatusCode(500);
+            }
+        }
+
+        [HttpPatch("ComprarTodo")]
+        public async Task<IActionResult> ComprarTodo()
+        {
+            try
+            {
+                int usuarioID = await _metodosDeValidacion.ObtenerUsuarioIDToken();
+
+                List<CarritoSalida> carritoDetallado = await _carritoServicios.ObtenerCarrito(usuarioID);
+
+                foreach (var carritoItem in carritoDetallado)
+                {
+                    bool stock = await _carritoServicios.ReducirStock(carritoItem.Carrito_PID, carritoItem.Carrito_ProdUnidades);
+
+                    if (!stock) return BadRequest(new { Mensaje = $"No hay stock para el producto '{carritoItem.Publicacion.Public_Nombre}' en el carrito" });
+
+                    bool compra = await _carritoServicios.AgregarAlHistorial(carritoItem.Carrito_PID, carritoItem.Carrito_ProdUnidades);
+
+                    if (!compra) return BadRequest(new { Mensaje = $"No se ha podido efectuar la compra para el producto '{carritoItem.Publicacion.Public_Nombre}' en el carrito" });
+                }
+
+                return Ok(new { Mensaje = "Se ha comprado satisfactoriamente" });
+            }
+            catch (Exception ex)
+            {
+                Console.WriteLine(new { ErrorDetalle = ex.Message });
+                return StatusCode(500);
+            }
+        }
+
+
+        [HttpDelete("Eliminar")]
+        public async Task<IActionResult> Eliminar([FromBody] CarritoElim carrito)
+        {
+            try
+            {
+                int usuarioID = await _metodosDeValidacion.ObtenerUsuarioIDToken();
                 
-        //        if (!resultado) return BadRequest();
+                PublicacionSalida publicacionExiste = await _publicacionServicios.ObtenerPublicacionPorID(carrito.Carrito_PID);
+                
+                if (publicacionExiste == null) return NotFound(new { Mensaje = "publicacion no encontrada" });
+                
+                bool eliminar = await _carritoServicios.Eliminar(usuarioID, carrito.Carrito_PID);
+                
+                if (!eliminar) return BadRequest();
 
-        //        return Ok(new {Mensaje = "Se ha comprado satisfactoriamente"});
-        //    }
-        //    catch (Exception ex)
-        //    {
-        //        Console.WriteLine(new { ErrorDetalle = ex.Message });
-        //        return StatusCode(500);
-        //    }
-        //}
+                return Ok(new { Mensaje = "El producto se ha eliminado satisfactoriamente" });
+            }
+            catch (Exception ex)
+            {
+                Console.WriteLine(new { ErrorDetalle = ex.Message });
+                return StatusCode(500);
+            }
+        }
+
+        [HttpDelete("EliminarTodo")]
+        public async Task<IActionResult> EliminarTodo()
+        {
+            try
+            {
+                int usuarioID = await _metodosDeValidacion.ObtenerUsuarioIDToken();
+
+                bool eliminar = await _carritoServicios.EliminarTodo(usuarioID);
+
+                if (!eliminar) return BadRequest();
+
+                return Ok(new { Mensaje = "Se ha vaciado el carrito satisfactoriamente" });
+            }
+            catch (Exception ex)
+            {
+                Console.WriteLine(new { ErrorDetalle = ex.Message });
+                return StatusCode(500);
+            }
+        }
     }
 }

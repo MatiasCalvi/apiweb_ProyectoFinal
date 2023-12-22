@@ -5,6 +5,8 @@
         public string obtenerCarritoQuery { get;}
         public string agregarProducto { get; }
         public string verificarDuplicado { get;}
-        public string comprarQuery { get;}
+        public string agregarAlHistorialQuery { get;}
+        public string eliminarQuery { get; }
+        public string eliminarTodoQuery { get; }
     }
 }
