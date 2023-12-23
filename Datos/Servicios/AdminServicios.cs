@@ -33,6 +33,11 @@ namespace Datos.Servicios
             return await _daoBDAdmins.ObtenerCarritos();
         }
 
+        public async Task<List<HistoriaCompraSalida>> ObtenerHistoriales()
+        {
+            return await _daoBDAdmins.ObtenerHistoriales();
+        }
+
         public async Task<bool> VerificarUsuarioHabilitado(int pId)
         {
             bool resultado = await _daoBDAdmins.VerificarUsuarioHabilitado(pId);

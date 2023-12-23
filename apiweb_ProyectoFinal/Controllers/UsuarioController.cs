@@ -70,7 +70,7 @@ namespace apiWeb_MVC.Controllers
         }
 
         [HttpPatch("ActualizarUsuario")] // *--> no se puede cambiar el Rol con este controlador
-        [Authorize(Roles = "1,2")]
+        [Authorize]
         public async Task<IActionResult> ActualizarUsuario([FromBody] UsuarioModif usuario)
         {   
             try

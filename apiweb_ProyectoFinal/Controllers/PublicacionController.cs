@@ -126,10 +126,16 @@ namespace TuProyecto.Controllers
                 }
 
                 PublicacionSalida publicacion = await _publicacionServicios.ObtenerPublicacionPorID(publicacionID);
-                
+
                 if (publicacion == null) return BadRequest(new { Mensaje = "Publicacion no encontrada" });
+                
+                int usuarioID = await _metodosDeValidacion.ObtenerUsuarioIDToken();
+
+                if (usuarioID != publicacion.Public_UsuarioID) return Forbid();
 
                 bool publicacionModif = await _publicacionServicios.EditarPublicacion(publicacionID, publicacionEntrada);
+
+                if(!publicacionModif) return NotFound(new { Mensaje = "Ah ocurrido un error al intentar editar la publicacion" });
 
                 return NoContent();
 
@@ -151,6 +157,8 @@ namespace TuProyecto.Controllers
 
                 int usuarioId = await _metodosDeValidacion.ObtenerUsuarioIDToken();
 
+                if (usuarioId != publicacion.Public_UsuarioID) return Forbid();
+
                 bool yaPausada = await _publicacionServicios.VerificarPublicPausada(publicacionID);
 
                 if (publicacion == null || yaPausada)
@@ -160,7 +168,7 @@ namespace TuProyecto.Controllers
 
                 bool resultado = await _publicacionServicios.PausarPublicacion(publicacionID, usuarioId);
                 
-                if (!resultado) return Forbid();
+                if (!resultado) return NotFound(new { Mensaje = "Ah ocurrido un error al intentar pausar la publicacion" });
 
                 return NoContent();
 
@@ -182,6 +190,10 @@ namespace TuProyecto.Controllers
                 
                 int usuarioId = await _metodosDeValidacion.ObtenerUsuarioIDToken();
 
+                int usuarioID = await _metodosDeValidacion.ObtenerUsuarioIDToken();
+
+                if (usuarioID != publicacion.Public_UsuarioID) return Forbid();
+
                 bool yaCancelada = await _publicacionServicios.VerificarPublicCancelada(publicacionID);
                 
                 if (publicacion == null || yaCancelada)
@@ -191,7 +203,7 @@ namespace TuProyecto.Controllers
 
                 bool resultado = await _publicacionServicios.CancelarPublicacion(publicacionID,usuarioId);
 
-                if (!resultado) return Forbid();
+                if (!resultado) return NotFound(new { Mensaje = "Ah ocurrido un error al intentar cancelar la publicacion" });
 
                 return NoContent();
             }
@@ -210,16 +222,20 @@ namespace TuProyecto.Controllers
             {
                 PublicacionSalida publicacion = await _publicacionServicios.ObtenerPublicacionPorID(publicacionID);
 
+                int usuarioID = await _metodosDeValidacion.ObtenerUsuarioIDToken();
+
+                if (usuarioID != publicacion.Public_UsuarioID) return Forbid();
+
                 bool yaActivada = await _publicacionServicios.VerificarPublicActivada(publicacionID);
 
                 if (publicacion == null || yaActivada)
                 {
-                    return NotFound(new { Mensaje = $"Publicacion con ID {publicacionID} no encontrada o ya se esta activada" });
+                    return NotFound(new { Mensaje = $"Publicacion con ID {publicacionID} no encontrada o ya se encuentra activada" });
                 }
 
                 bool resultado = await _publicacionServicios.ActivarPublicacion(publicacionID, nuevoStock.Public_Stock);
                 
-                if (!resultado) return Forbid();
+                if (!resultado) return NotFound(new { Mensaje = "Ah ocurrido un error al intentar activar la publicacion"});
 
                 return NoContent();
 

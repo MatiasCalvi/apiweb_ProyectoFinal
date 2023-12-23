@@ -4,6 +4,7 @@ using Datos.Modelos;
 using Datos.Modelos.DTO;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
+using System.Net;
 
 namespace apiweb_ProyectoFinal.Controllers
 {
@@ -70,39 +71,43 @@ namespace apiweb_ProyectoFinal.Controllers
         }
 
         [HttpPost("RefreshToken")]
-        [Authorize]
         public async Task<IActionResult> RefreshToken()
         {
             try
             {
-                int usuarioRoleClaim = await _metodosDeValidacion.ObtenerUsuarioIDToken();
-
-                string refreshToken = await _metodosDeValidacion.ObtenerRefreshToken(usuarioRoleClaim);
+                string refreshToken = Request.Cookies["RefreshToken"];
 
                 if (string.IsNullOrEmpty(refreshToken))
-                {
-                    return Unauthorized(new { Mensaje = "El token de actualización no se encuentra en la base de datos." });
-                }
-
-                UsuarioSalida usuarioSalida = await _usuarioServicios.ObtenerUsuarioPorID(usuarioRoleClaim);
-
-                string token = _metodosDeValidacion.GenerarTokenAcceso(usuarioSalida);
-
-                var cookie = Request.Cookies["RefreshToken"];
-
-                if (cookie == null)
                 {
                     return Unauthorized(new { Mensaje = "Falta el token de actualización o no es válido." });
                 }
 
-                _metodosDeValidacion.ActualizarCookie(refreshToken, cookie);
+                if (!await _metodosDeValidacion.EsRefreshTokenValido(refreshToken))
+                {
+                    return Unauthorized(new { Mensaje = "El token de actualización ha expirado o no es válido." });
+                }
 
+                int usuarioIDClaim = await _metodosDeValidacion.ObtenerUsuarioIDRefreshToken(refreshToken);
+                
+                string refreshTokenBD = await _metodosDeValidacion.ObtenerRefreshToken(usuarioIDClaim);
+
+                if (string.IsNullOrEmpty(refreshTokenBD))
+                {
+                    return Unauthorized(new { Mensaje = "El token de actualización no se encuentra en la base de datos." }); 
+                }
+                
+                UsuarioSalida usuarioSalida = await _usuarioServicios.ObtenerUsuarioPorID(usuarioIDClaim);
+               
+                string token = _metodosDeValidacion.GenerarTokenAcceso(usuarioSalida);
+                
+                _metodosDeValidacion.ActualizarCookie(refreshToken);
+                
                 return Ok(new { Token = token, RefreshToken = refreshToken });
             }
             catch (Exception ex)
             {
                 Console.WriteLine(new { ErrorDetalle = ex.Message });
-                return StatusCode(500);
+                return BadRequest(new { Mensaje = "Se produjo un error al refrescar el token de acceso" });
             }
         }
     }

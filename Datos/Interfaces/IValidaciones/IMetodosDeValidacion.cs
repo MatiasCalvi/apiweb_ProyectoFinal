@@ -8,12 +8,14 @@ namespace Datos.Interfaces.IValidaciones
         Task<bool> VerificarContra(string pUserInput, string pHashedPassword);
         Task<UsuarioSalida> VerificarUsuario(string pEmail, string pPassword);
         Task<int> ObtenerUsuarioIDToken();
+        Task<int> ObtenerUsuarioIDRefreshToken(string refreshToken);
         Task<string> ObtenerUsuarioRoleToken();
         Task<string> ObtenerRefreshToken(int pUsuario);
         string GenerarTokenAcceso(UsuarioSalida usuario);
         Task<string> GenerarYGuardarRefreshToken(int userId, string userRole);
         Task EliminarRefreshToken(int userId);
+        Task<bool> EsRefreshTokenValido(string refreshToken);
         void EliminarCookie(string pNombreCookie);
-        void ActualizarCookie(string refreshToken, string cookieValue);
+        public void ActualizarCookie(string refreshToken);
     }
 }

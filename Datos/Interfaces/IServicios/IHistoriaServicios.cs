@@ -1,12 +1,9 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
+﻿using Datos.Modelos.DTO;
 
 namespace Datos.Interfaces.IServicios
 {
     public interface IHistoriaServicios
     {
+        Task<List<HistoriaCompraSalida>> ObtenerHistorial(int pUsuarioID);
     }
 }

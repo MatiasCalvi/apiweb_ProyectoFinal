@@ -76,7 +76,7 @@ builder.Services.AddScoped<IAdminQuerys, AdminQuerys>();
 builder.Services.AddScoped<IPublicacionQuerys, PublicacionQuerys>();
 builder.Services.AddScoped<IUsuarioQuerys, UsuariosQuery>();
 builder.Services.AddScoped<ICarritoQuerys, CarritoQuerys>();
-builder.Services.AddScoped<IHistoriaQuerys,HistoriaQuerys>();
+builder.Services.AddScoped<IHistoriaQuerys, HistoriaQuerys>();
 
 builder.Services.Configure<BDConfiguration>(builder.Configuration.GetSection("BD"));
 builder.Services.Configure<JwtConfiguration>(builder.Configuration.GetSection("Jwt"));

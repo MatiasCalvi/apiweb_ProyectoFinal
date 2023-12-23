@@ -4,13 +4,7 @@ namespace Datos.Querys
 {
     public class HistoriaQuerys : IHistoriaQuerys
     {
-        public int HC_ID { get; set; }
-        public int HC_UsuarioID { get; set; }
-        public int HC_PID { get; set; }
-        public int HC_Unidades { get; set; }
-        public int HC_PrecioFinal { get; set; }
-        public int HC_FechaCompra { get; set; }
+        public string obtenerHistorialQuery { get; set; } = "SELECT * FROM historial_compras WHERE HC_UsuarioID = @HC_UsuarioID";
 
-        public HistoriaQuerys() { }
     }
 }

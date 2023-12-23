@@ -3,6 +3,7 @@ using Datos.Interfaces.IValidaciones;
 using Datos.Modelos;
 using Datos.Modelos.DTO;
 using Datos.Servicios;
+using Datos.Validaciones;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 
@@ -53,6 +54,39 @@ namespace apiweb_ProyectoFinal.Controllers
             catch (Exception ex)
             {
                 return StatusCode(500, new { Msj = "Error durante la busqueda", Detalle = ex.Message });
+            }
+        }
+
+        [HttpGet("ObtenerCarritos")]
+        public async Task<IActionResult> ObtenerCarritos()
+        {
+            try
+            {
+                List<CarritoSalida> lista = await _adminServicios.ObtenerCarritos();
+
+                return Ok(lista);
+
+            }
+            catch (Exception ex)
+            {
+                Console.WriteLine(new { ErrorDetalle = ex.Message });
+                return StatusCode(500);
+            }
+        }
+
+        [HttpGet("ObtenerHistoriales")]
+        public async Task<IActionResult> ObtenerHistoriales()
+        {
+            try
+            {
+                List<HistoriaCompraSalida> historiales = await _adminServicios.ObtenerHistoriales();
+
+                return Ok(historiales);
+            }
+            catch (Exception ex)
+            {
+                Console.WriteLine(new { ErrorDetalle = ex.Message });
+                return StatusCode(500);
             }
         }
 
@@ -245,23 +279,6 @@ namespace apiweb_ProyectoFinal.Controllers
                 bool resultado = await _publicacionServicios.ActivarPublicacionAdmin(publicacionID);
 
                 return NoContent();
-
-            }
-            catch (Exception ex)
-            {
-                Console.WriteLine(new { ErrorDetalle = ex.Message });
-                return StatusCode(500);
-            }
-        }
-
-        [HttpGet("ObtenerCarritos")]
-        public async Task<IActionResult> ObtenerCarritos()
-        {
-            try
-            {
-                List<CarritoSalida> lista = await _adminServicios.ObtenerCarritos();
-
-                return Ok(lista);
 
             }
             catch (Exception ex)

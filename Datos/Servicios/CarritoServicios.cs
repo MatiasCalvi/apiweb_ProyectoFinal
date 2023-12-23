@@ -82,13 +82,15 @@ namespace Datos.Servicios
                 Public_Precio = publicacion.Public_Precio,
                 Public_Imagen = publicacion.Public_Imagen,
                 Public_FModif = DateTime.Now,
-                Public_Stock = publicacion.Public_Stock,
+                Public_Stock = publicacion.Public_Stock
             };
 
             if (publicacion.Public_Stock == 0)
             {
                 publicacion.Public_Estado = 4;
                 await _publicacionServicios.PausarPublicacion(publicacionID, publicacion.Public_UsuarioID);
+                                                                                                                    //optimizar esto
+                await _publicacionServicios.EditarPublicacion(publicacionID, publicacionFinal);
 
                 return true;
             }

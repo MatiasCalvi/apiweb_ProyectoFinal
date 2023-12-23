@@ -224,5 +224,12 @@ namespace Datos
             return filasAfectadas > 0;
 
         }
+
+        public async Task<List<HistoriaCompraSalida>> ObtenerHistoriales()
+        {
+            using IDbConnection dbConnection = CreateConnection();
+            dbConnection.Open();
+            return (await dbConnection.QueryAsync<HistoriaCompraSalida>(_adminQuery.obtenerHistorialesQuery)).ToList();
+        }
     }
 }
