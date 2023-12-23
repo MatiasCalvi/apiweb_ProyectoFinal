@@ -58,7 +58,6 @@ namespace Datos
             return listaCarritoSalida; 
         }
 
-
         public async Task<bool> Agregar(int pUsuarioID, Carrito pCarrito)
         {
             try

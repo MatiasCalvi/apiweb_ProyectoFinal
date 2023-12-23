@@ -82,6 +82,7 @@ namespace Datos.Validaciones
                 throw new BadHttpRequestException("Se produjo un error al verificar la contraseña", ex);
             }
         }
+
         public async Task<string> ObtenerRefreshToken(int pUsuarioId)
         {
             try
@@ -93,6 +94,7 @@ namespace Datos.Validaciones
                 throw new Exception("Error al obtener el token de actualización del servicio.", ex);
             }
         }
+
         public async Task<int> ObtenerUsuarioIDToken()
         {
             var userIdClaim = _httpContextAccessor.HttpContext.User.FindFirst(ClaimTypes.Sid);
@@ -102,6 +104,24 @@ namespace Datos.Validaciones
                 return userId;
             }
             throw new ApplicationException("No se pudo extraer Usuario_Id del token.");
+        }
+
+        public async Task<int> ObtenerUsuarioIDRefreshToken(string refreshToken)
+        {
+            var handler = new JwtSecurityTokenHandler();
+            var jsonToken = handler.ReadToken(refreshToken) as JwtSecurityToken;
+
+            if (jsonToken != null)
+            {
+                var userIdClaim = jsonToken.Claims.FirstOrDefault(c => c.Type == "http://schemas.xmlsoap.org/ws/2005/05/identity/claims/nameidentifier");
+
+                if (userIdClaim != null && int.TryParse(userIdClaim.Value, out int userId))
+                {
+                    return userId;
+                }
+            }
+
+            throw new ApplicationException("No se pudo extraer el Id del usuario del refresh token.");
         }
 
         public async Task<string> ObtenerUsuarioRoleToken()
@@ -128,7 +148,7 @@ namespace Datos.Validaciones
                     new Claim(ClaimTypes.Email, pUsuario.Usuario_Email),
                 };
             var now = DateTime.Now;
-            var expiration = now.AddMinutes(3);
+            var expiration = now.AddMinutes(4);
 
             var sectoken = new JwtSecurityTokenHandler().CreateToken(new SecurityTokenDescriptor
             {
@@ -193,6 +213,18 @@ namespace Datos.Validaciones
             }
         }
 
+        public async Task<bool> EsRefreshTokenValido(string refreshToken)
+        {
+            var tokenHandler = new JwtSecurityTokenHandler();
+
+            var jwtToken = tokenHandler.ReadJwtToken(refreshToken);
+            var expiration = jwtToken.ValidTo;
+
+            if (expiration < DateTime.Now) return false;
+            
+            return true;     
+        }
+
         private void EstablecerCookie(string pRefreshToken)
         {
             var cookieOptions = ConstruirCookieOptions();
@@ -218,7 +250,7 @@ namespace Datos.Validaciones
             _httpContextAccessor.HttpContext.Response.Cookies.Append(pNombreCookie, "", cookieOptions);
         }
 
-        public void ActualizarCookie(string refreshToken, string cookieValue)
+        public void ActualizarCookie(string refreshToken)
         {
             var tokenHandler = new JwtSecurityTokenHandler();
             var token = tokenHandler.ReadJwtToken(refreshToken);
@@ -227,7 +259,7 @@ namespace Datos.Validaciones
             var cookie = new CookieOptions();
             cookie.Expires = expiration;
 
-            _httpContextAccessor.HttpContext.Response.Cookies.Append("RefreshToken", cookieValue, cookie);
+            _httpContextAccessor.HttpContext.Response.Cookies.Append("RefreshToken", refreshToken, cookie);
         }
 
     }
