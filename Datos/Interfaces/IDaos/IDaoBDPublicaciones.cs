@@ -9,7 +9,7 @@ namespace Datos.Interfaces.IDaos
         Task<List<PublicacionSalida>> ObtenerPublicaciones();
         Task<PublicacionSalida?> ObtenerPublicacionPorID(int pId);
         Task<PublicacionSalidaM?> ObtenerPublicacionPorIDM(int pId);
-        Task<PublicacionSalidaE?> ObtenerPublicacionPorIDE(int pId);
+        Task<PublicacionSalida?> ObtenerPublicacionPorIDE(int pId);
         Task<PublicacionSalida> ObtenerStock(int pId);
         Task<List<PublicacionSalida>> Buscar(string pPalabraClave);
         Task<List<PublicacionSalida>> PublicacionesDeUnUsuario(int pUsuarioID);

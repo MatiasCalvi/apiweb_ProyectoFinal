@@ -28,7 +28,7 @@ namespace Datos
             return dbConnection;
         }
 
-        public async Task<List<UsuarioSalida>> ObtenerTodosLosUsuarios()
+        public async Task<List<UsuarioSalida>> ObtenerTodosLosUsuarios() 
         {
             try
             {
@@ -49,6 +49,14 @@ namespace Datos
             return (await dbConnection.QueryAsync<PublicacionSalida>(_adminQuery.obtenerPublicacionesQuery)).ToList();
         }
 
+        public async Task<List<PublicacionSalida>> PublicacionesDeUnUsuario(int pUsuarioID)
+        {
+            using IDbConnection dbConnection = CreateConnection();
+            dbConnection.Open();
+
+            return (await dbConnection.QueryAsync<PublicacionSalida>(_adminQuery.obtenerPublicacionesDeUnUsuarioQuery, new { Public_UsuarioID = pUsuarioID })).ToList();
+        }
+
         public async Task<List<CarritoSalida>> ObtenerCarritos()
         {
             using IDbConnection dbConnection = CreateConnection();
@@ -59,13 +67,15 @@ namespace Datos
             
             foreach (dynamic obj in listaDinamica) 
             {
-                PublicacionSalida publicacion = new PublicacionSalida(obj.Public_UsuarioID, 
-                                                                        obj.Carrito_PID, 
-                                                                        obj.Public_Nombre,
-                                                                        obj.Public_Descripcion, 
-                                                                        obj.Public_Precio, 
-                                                                        obj.Public_Imagen, 
-                                                                        obj.Public_Stock);
+              
+                PublicacionSalida publicacion = new PublicacionSalida(obj.Public_ID,
+                                                    obj.Public_UsuarioID,
+                                                    obj.Public_Nombre,
+                                                    obj.Public_Descripcion,
+                                                    Convert.ToDecimal(obj.Public_Precio),
+                                                    obj.Public_Imagen,
+                                                    obj.Public_Stock,
+                                                    obj.Public_Estado.ToString());
 
                 CarritoSalida carrito = new CarritoSalida(obj.Carrito_UsuarioID,
                                             obj.Carrito_PID,

@@ -50,11 +50,11 @@ namespace Datos
             return (await dbConnection.QueryAsync<PublicacionSalidaM>(_publicidadQuerys.obtenerPublicacionIDQuery, new { Public_ID = pId })).FirstOrDefault();
         }
 
-        public async Task<PublicacionSalidaE?> ObtenerPublicacionPorIDE(int pId)
+        public async Task<PublicacionSalida?> ObtenerPublicacionPorIDE(int pId)
         {
             using IDbConnection dbConnection = CreateConnection();
             dbConnection.Open();
-            return (await dbConnection.QueryAsync<PublicacionSalidaE>(_publicidadQuerys.obtenerPublicacionIDQuery, new { Public_ID = pId })).FirstOrDefault();
+            return (await dbConnection.QueryAsync<PublicacionSalida>(_publicidadQuerys.obtenerPublicacionIDQuery, new { Public_ID = pId })).FirstOrDefault();
         }
 
         public async Task<PublicacionSalida> ObtenerStock(int pId)

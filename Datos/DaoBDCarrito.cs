@@ -40,13 +40,14 @@ namespace Datos
             foreach (dynamic obj in listaDinamica) 
             {
                 
-                PublicacionSalida publicacion = new PublicacionSalida(obj.Public_UsuarioID, 
-                                                                        obj.Carrito_PID, 
+                PublicacionSalida publicacion = new PublicacionSalida(obj.Public_ID,
+                                                                        obj.Public_UsuarioID, 
                                                                         obj.Public_Nombre, 
                                                                         obj.Public_Descripcion, 
                                                                         obj.Public_Precio, 
                                                                         obj.Public_Imagen, 
-                                                                        obj.Public_Stock);
+                                                                        obj.Public_Stock,
+                                                                        obj.Public_Estado);
                 
                 CarritoSalida carrito = new CarritoSalida(obj.Carrito_UsuarioID, 
                                                             obj.Carrito_PID,
@@ -58,7 +59,7 @@ namespace Datos
             return listaCarritoSalida; 
         }
 
-        public async Task<bool> Agregar(int pUsuarioID, Carrito pCarrito)
+        public async Task<bool> Agregar(int pUsuarioID, CarritoCreacion pCarrito)
         {
             try
             {

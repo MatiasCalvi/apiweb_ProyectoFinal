@@ -4,6 +4,7 @@
     {
         public string obtenerUsuariosQuery {  get; }
         public string obtenerPublicacionesQuery { get; }
+        public string obtenerPublicacionesDeUnUsuarioQuery { get; }
         public string obtenerCarritosQuery { get; }
         public string obtenerHistorialesQuery { get;}
         public string verificarUsuarioDeshabilitadoQuery { get; }

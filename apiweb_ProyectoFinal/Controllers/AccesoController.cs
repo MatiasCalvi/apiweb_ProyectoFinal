@@ -4,6 +4,7 @@ using Datos.Modelos;
 using Datos.Modelos.DTO;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
+using Microsoft.Extensions.Logging;
 using System.Net;
 
 namespace apiweb_ProyectoFinal.Controllers
@@ -28,6 +29,7 @@ namespace apiweb_ProyectoFinal.Controllers
         {
             try
             {
+                Console.WriteLine(usuario.Usuario_Contra+" CONTROLADOR");
                 UsuarioSalida usuarioSalida = await _metodosDeValidacion.VerificarUsuario(usuario.Usuario_Email, usuario.Usuario_Contra);
 
                 if (usuarioSalida == null)
@@ -44,7 +46,7 @@ namespace apiweb_ProyectoFinal.Controllers
             }
             catch (Exception ex)
             {
-                Console.WriteLine(new { ErrorDetalle = ex.Message });
+                _logger.LogError(ex, "Error al Iniciar Sesion");
                 return StatusCode(500);
             }
         }
@@ -65,7 +67,7 @@ namespace apiweb_ProyectoFinal.Controllers
             }
             catch (Exception ex)
             {
-                Console.WriteLine(new { ErrorDetalle = ex.Message });
+                _logger.LogError(ex, "Error al Cerrar Sesion");
                 return StatusCode(500);
             }
         }
@@ -106,7 +108,7 @@ namespace apiweb_ProyectoFinal.Controllers
             }
             catch (Exception ex)
             {
-                Console.WriteLine(new { ErrorDetalle = ex.Message });
+                _logger.LogError(ex, "Error al Refrescar el Token");
                 return BadRequest(new { Mensaje = "Se produjo un error al refrescar el token de acceso" });
             }
         }

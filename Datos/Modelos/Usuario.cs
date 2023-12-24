@@ -68,7 +68,7 @@ namespace Datos.Modelos
         
         [AllowNull]
         [JsonIgnore]
-        public int? Usuario_Role { get; set; }
+        public string? Usuario_Role { get; set; }
 
         [AllowNull]
         [JsonIgnore]

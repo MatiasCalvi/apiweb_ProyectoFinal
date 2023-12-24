@@ -12,13 +12,16 @@ namespace TuProyecto.Controllers
     [ApiController]
     [Route("Publicacion")]
 
-    public class PublicacionServiciosController : ControllerBase
+    public class PublicacionController : ControllerBase
     {
         private readonly IPublicacionServicios _publicacionServicios;
         private readonly IMetodosDeValidacion _metodosDeValidacion;
 
-        public PublicacionServiciosController(IPublicacionServicios publicacionServicios, IMetodosDeValidacion metodosDeValidacion)
+        private readonly ILogger<PublicacionController> _logger;
+
+        public PublicacionController(ILogger<PublicacionController>logger,IPublicacionServicios publicacionServicios, IMetodosDeValidacion metodosDeValidacion)
         {
+            _logger = logger;
             _publicacionServicios = publicacionServicios;
             _metodosDeValidacion = metodosDeValidacion;
         }
@@ -33,7 +36,8 @@ namespace TuProyecto.Controllers
             }
             catch (Exception ex)
             {
-                return StatusCode(500, new { Msj = "Error durante la busqueda", Detalle = ex.Message });
+                _logger.LogError(ex.Message);
+                return StatusCode(500);
             }
         }
 
@@ -48,7 +52,8 @@ namespace TuProyecto.Controllers
             }
             catch (Exception ex)
             {
-                return StatusCode(500, new { Msj = "Error durante la busqueda", Detalle = ex.Message });
+                _logger.LogError(ex.Message);
+                return StatusCode(500);
             }
         }
 
@@ -65,13 +70,14 @@ namespace TuProyecto.Controllers
             }
             catch (Exception ex)
             {
-                return StatusCode(500, new { Msj = "Error durante la busqueda", Detalle = ex.Message });
+                _logger.LogError(ex.Message);
+                return StatusCode(500);
             }
         }
 
-        [HttpGet("Publicaciones")] 
+        [HttpGet("TusPublicaciones")] 
         [Authorize]
-        public async Task<IActionResult> Publicaciones()
+        public async Task<IActionResult> TusPublicaciones()
         {
             try
             {
@@ -82,7 +88,8 @@ namespace TuProyecto.Controllers
             }
             catch (Exception ex)
             {
-                return StatusCode(500, new { Msj = "Error durante la busqueda", Detalle = ex.Message });
+                _logger.LogError(ex.Message);
+                return StatusCode(500);
             }
         }
 
@@ -108,7 +115,7 @@ namespace TuProyecto.Controllers
             }
             catch (Exception ex)
             {
-                Console.WriteLine(new { ErrorDetalle = ex.Message });
+                _logger.LogError(ex.Message);
                 return StatusCode(500);
             }
         }
@@ -142,7 +149,7 @@ namespace TuProyecto.Controllers
             }
             catch (Exception ex)
             {
-                Console.WriteLine(new { ErrorDetalle = ex.Message });
+                _logger.LogError(ex.Message);
                 return StatusCode(500);
             }
         }
@@ -175,7 +182,7 @@ namespace TuProyecto.Controllers
             }
             catch (Exception ex)
             {
-                Console.WriteLine(new { ErrorDetalle = ex.Message });
+                _logger.LogError(ex,"Error al Pausar la publicacion");
                 return StatusCode(500);
             }
         }
@@ -209,7 +216,7 @@ namespace TuProyecto.Controllers
             }
             catch (Exception ex)
             {
-                Console.WriteLine(new { ErrorDetalle = ex.Message });
+                _logger.LogError(ex, "Error al cancelar la publicacion");
                 return StatusCode(500);
             }
         }
@@ -242,7 +249,7 @@ namespace TuProyecto.Controllers
             }
             catch (Exception ex)
             {
-                Console.WriteLine(new { ErrorDetalle = ex.Message });
+                _logger.LogError(ex, "Error al activar la publicacion");
                 return StatusCode(500);
             }
         }

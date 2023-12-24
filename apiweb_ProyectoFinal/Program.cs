@@ -63,6 +63,7 @@ builder.Services.AddScoped<IDaoBDPublicaciones, DaoBDPublicaciones>();
 builder.Services.AddScoped<IDaoBDUsuarioAcceso, DaoBDUsuarioAcceso>();
 builder.Services.AddScoped<IDaoBDCarrito, DaoBDCarrito>();
 builder.Services.AddScoped<IDaoBDHistorias, DaoBDHistorias>();
+builder.Services.AddScoped<IDaoBDOfertas,DaoBDOfertas>();
 
 builder.Services.AddScoped<IAdminServicios, AdminServicios>();
 builder.Services.AddScoped<IUsuarioServicios, UsuarioServicios>();
@@ -70,6 +71,7 @@ builder.Services.AddScoped<IMetodosDeValidacion, MetodosDeValidacion>();
 builder.Services.AddScoped<IPublicacionServicios, PublicacionServicios>();
 builder.Services.AddScoped<ICarritoServicios, CarritoServicios>();
 builder.Services.AddScoped<IHistoriaServicios, HistoriaServicios>();
+builder.Services.AddScoped<IOfertasServicios, OfertasServicios>();
 
 builder.Services.AddScoped<IAccesoQuerys, AccesoQuerys>();
 builder.Services.AddScoped<IAdminQuerys, AdminQuerys>();
@@ -77,6 +79,7 @@ builder.Services.AddScoped<IPublicacionQuerys, PublicacionQuerys>();
 builder.Services.AddScoped<IUsuarioQuerys, UsuariosQuery>();
 builder.Services.AddScoped<ICarritoQuerys, CarritoQuerys>();
 builder.Services.AddScoped<IHistoriaQuerys, HistoriaQuerys>();
+builder.Services.AddScoped<IOfertaQuerys, OfertaQuerys>();
 
 builder.Services.Configure<BDConfiguration>(builder.Configuration.GetSection("BD"));
 builder.Services.Configure<JwtConfiguration>(builder.Configuration.GetSection("Jwt"));

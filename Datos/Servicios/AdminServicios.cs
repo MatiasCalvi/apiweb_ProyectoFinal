@@ -28,6 +28,11 @@ namespace Datos.Servicios
             return await _daoBDAdmins.ObtenerPublicaciones();
         }
 
+        public async Task<List<PublicacionSalida>> PublicacionesDeUnUsuario(int pUsuarioID)
+        {
+            return await _daoBDAdmins.PublicacionesDeUnUsuario(pUsuarioID);
+        }
+
         public async Task<List<CarritoSalida>> ObtenerCarritos()
         {
             return await _daoBDAdmins.ObtenerCarritos();

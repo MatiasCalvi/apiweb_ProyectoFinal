@@ -8,6 +8,7 @@ namespace Datos.Interfaces.IDaos
     {
         Task<List<PublicacionSalida>> ObtenerPublicaciones();
         Task<List<UsuarioSalida>> ObtenerTodosLosUsuarios();
+        Task<List<PublicacionSalida>> PublicacionesDeUnUsuario(int pUsuarioID);
         Task<List<CarritoSalida>> ObtenerCarritos();
         Task<List<HistoriaCompraSalida>> ObtenerHistoriales();
         Task<bool> VerificarUsuarioDeshabilitado(int usuarioId);

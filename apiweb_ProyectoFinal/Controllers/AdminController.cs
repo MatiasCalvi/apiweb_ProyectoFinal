@@ -11,7 +11,7 @@ namespace apiweb_ProyectoFinal.Controllers
 {
     [ApiController]
     [Route("Admin")]
-    [Authorize(Roles = "2")]
+    [Authorize(Roles = "admin")]
     public class AdminController : Controller
     {
         private IUsuarioServicios _usuarioServicios;
@@ -38,7 +38,7 @@ namespace apiweb_ProyectoFinal.Controllers
             }
             catch (Exception ex)
             {
-                Console.WriteLine(new { ErrorDetalle = ex.Message });
+                _logger.LogError(ex, "Error al obtener los usuarios");
                 return StatusCode(500);
             }
         }
@@ -53,7 +53,23 @@ namespace apiweb_ProyectoFinal.Controllers
             }
             catch (Exception ex)
             {
-                return StatusCode(500, new { Msj = "Error durante la busqueda", Detalle = ex.Message });
+                _logger.LogError(ex, "Error al obtener las publicaciones");
+                return StatusCode(500);
+            }
+        }
+
+        [HttpGet("PublicacionesUsuario")]
+        public async Task<IActionResult> PublicacionesUsuario([FromQuery]int userID)
+        {
+            try
+            {
+                List<PublicacionSalida> publicaciones = await _adminServicios.PublicacionesDeUnUsuario(userID);
+                return Ok(publicaciones);
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError(ex, "Error al obtener las publicaciones");
+                return StatusCode(500);
             }
         }
 
@@ -69,7 +85,7 @@ namespace apiweb_ProyectoFinal.Controllers
             }
             catch (Exception ex)
             {
-                Console.WriteLine(new { ErrorDetalle = ex.Message });
+                _logger.LogError(ex, "Error al obtener los carritos");
                 return StatusCode(500);
             }
         }
@@ -85,7 +101,7 @@ namespace apiweb_ProyectoFinal.Controllers
             }
             catch (Exception ex)
             {
-                Console.WriteLine(new { ErrorDetalle = ex.Message });
+                _logger.LogError(ex, "Error al obtener los historiales");
                 return StatusCode(500);
             }
         }
@@ -108,7 +124,7 @@ namespace apiweb_ProyectoFinal.Controllers
             }
             catch (Exception ex)
             {
-                Console.WriteLine(new { ErrorDetalle = ex.Message });
+                _logger.LogError(ex, $"Error al habilitar el usuario: {id}");
                 return StatusCode(500);
             }
         }
@@ -131,7 +147,7 @@ namespace apiweb_ProyectoFinal.Controllers
             }
             catch (Exception ex)
             {
-                Console.WriteLine(new { ErrorDetalle = ex.Message });
+                _logger.LogError(ex.Message);
                 return StatusCode(500);
             }
         }
@@ -155,7 +171,7 @@ namespace apiweb_ProyectoFinal.Controllers
             }
             catch (Exception ex)
             {
-                Console.WriteLine(new { ErrorDetalle = ex.Message });
+                _logger.LogError(ex, $"Error al asignar el rol admin al usuario: {id}");
                 return StatusCode(500);
             }
         }
@@ -179,7 +195,7 @@ namespace apiweb_ProyectoFinal.Controllers
             }
             catch (Exception ex)
             {
-                Console.WriteLine(new { ErrorDetalle = ex.Message });
+                _logger.LogError(ex, $"Error al asignar el rol al usuario: {id}");
                 return StatusCode(500);
             }
         }
@@ -206,7 +222,7 @@ namespace apiweb_ProyectoFinal.Controllers
             }
             catch (Exception ex)
             {
-                Console.WriteLine(new { ErrorDetalle = ex.Message });
+                _logger.LogError(ex.Message);
                 return StatusCode(500);
             }
         }
@@ -232,7 +248,7 @@ namespace apiweb_ProyectoFinal.Controllers
             }
             catch (Exception ex)
             {
-                Console.WriteLine(new { ErrorDetalle = ex.Message });
+                _logger.LogError(ex, $"Error al pausar la publicacion: {publicacionID}");
                 return StatusCode(500);
             }
         }
@@ -257,7 +273,7 @@ namespace apiweb_ProyectoFinal.Controllers
             }
             catch (Exception ex)
             {
-                Console.WriteLine(new { ErrorDetalle = ex.Message });
+                _logger.LogError(ex.Message);
                 return StatusCode(500);
             }
         }
@@ -283,7 +299,7 @@ namespace apiweb_ProyectoFinal.Controllers
             }
             catch (Exception ex)
             {
-                Console.WriteLine(new { ErrorDetalle = ex.Message });
+                _logger.LogError(ex,$"Error al activar la publicacion: {publicacionID}");
                 return StatusCode(500);
             }
         }

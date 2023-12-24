@@ -58,24 +58,21 @@ namespace Datos.Validaciones
                 {
                     return null;
                 }
-
+               
                 bool passwordMatch = await VerificarContra(pContra, usuario.Usuario_Contra);
-                if (passwordMatch)
+                
+                if (!passwordMatch) return null;
+
+                UsuarioSalida usuarioSalida = new UsuarioSalida
                 {
-                    UsuarioSalida usuarioSalida = new UsuarioSalida
-                    {
-                        Usuario_ID = usuario.Usuario_ID,
-                        Usuario_Nombre = usuario.Usuario_Nombre,
-                        Usuario_Apellido = usuario.Usuario_Apellido,
-                        Usuario_Email = usuario.Usuario_Email,
-                        Usuario_Role = (int)usuario.Usuario_Role
-                    };
-                    return usuarioSalida;
-                }
-                else
-                {
-                    return null;
-                }
+                    Usuario_ID = usuario.Usuario_ID,
+                    Usuario_Nombre = usuario.Usuario_Nombre,
+                    Usuario_Apellido = usuario.Usuario_Apellido,
+                    Usuario_Email = usuario.Usuario_Email,
+                    Usuario_Role = (string)usuario.Usuario_Role
+                };
+
+                return usuarioSalida;
             }
             catch (Exception ex)
             {

@@ -50,6 +50,9 @@ namespace Datos.Modelos
         public int? Public_Stock { get; set; }
 
         [JsonIgnore]
+        public int? Public_Estado { get; set; }
+
+        [JsonIgnore]
         public DateTime? Public_FModif { get; set; }
     }
 

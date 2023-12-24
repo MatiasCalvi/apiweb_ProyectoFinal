@@ -33,11 +33,6 @@ namespace Datos.Servicios
             return await _daoBDPublicaciones.ObtenerPublicacionPorIDM(pId);
         }
 
-        public async Task<PublicacionSalidaE> ObtenerPublicacionPorIDE(int pId)
-        {
-            return await _daoBDPublicaciones.ObtenerPublicacionPorIDE(pId);
-        }
-
         public async Task<PublicacionSalida> ObtenerStock(int pId)
         {
             return await _daoBDPublicaciones.ObtenerStock(pId);
