@@ -98,6 +98,7 @@ namespace Datos
                 throw new DatabaseTransactionException($"Error al crear una nueva publicación: {ex.Message}");
             }
         }
+
         public async Task<bool> PausarPublicacion(int pId, int pUsuarioID)
         {
             using IDbConnection dbConnection = CreateConnection();

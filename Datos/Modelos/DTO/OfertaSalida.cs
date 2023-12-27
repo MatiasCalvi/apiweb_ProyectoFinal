@@ -12,4 +12,8 @@ namespace Datos.Modelos.DTO
         public DateTime Oferta_FInicio { get; set; }
         public DateTime Oferta_FFin { get; set; }
     }
+    public class OfertaSalidaC : OfertaSalida
+    {
+        public DateTime Oferta_FCreacion { get; set; }
+    }
 }

@@ -36,7 +36,7 @@ namespace TuProyecto.Controllers
             }
             catch (Exception ex)
             {
-                _logger.LogError(ex.Message);
+                _logger.LogError(ex, "Error al Obtener las publicaciones");
                 return StatusCode(500);
             }
         }
@@ -52,7 +52,7 @@ namespace TuProyecto.Controllers
             }
             catch (Exception ex)
             {
-                _logger.LogError(ex.Message);
+                _logger.LogError(ex, "Error al Obtener las publicaciones");
                 return StatusCode(500);
             }
         }
@@ -70,7 +70,7 @@ namespace TuProyecto.Controllers
             }
             catch (Exception ex)
             {
-                _logger.LogError(ex.Message);
+                _logger.LogError(ex, "Error al obtener la publicacion");
                 return StatusCode(500);
             }
         }
@@ -88,7 +88,7 @@ namespace TuProyecto.Controllers
             }
             catch (Exception ex)
             {
-                _logger.LogError(ex.Message);
+                _logger.LogError(ex,"Error al obtener sus publicaciones");
                 return StatusCode(500);
             }
         }
@@ -115,7 +115,7 @@ namespace TuProyecto.Controllers
             }
             catch (Exception ex)
             {
-                _logger.LogError(ex.Message);
+                _logger.LogError(ex, "Error Interno del Servidor");
                 return StatusCode(500);
             }
         }
@@ -134,7 +134,7 @@ namespace TuProyecto.Controllers
 
                 PublicacionSalida publicacion = await _publicacionServicios.ObtenerPublicacionPorID(publicacionID);
 
-                if (publicacion == null) return BadRequest(new { Mensaje = "Publicacion no encontrada" });
+                if (publicacion == null) return NotFound(new { Mensaje = "Publicacion no encontrada" });
                 
                 int usuarioID = await _metodosDeValidacion.ObtenerUsuarioIDToken();
 
@@ -142,14 +142,14 @@ namespace TuProyecto.Controllers
 
                 bool publicacionModif = await _publicacionServicios.EditarPublicacion(publicacionID, publicacionEntrada);
 
-                if(!publicacionModif) return NotFound(new { Mensaje = "Ah ocurrido un error al intentar editar la publicacion" });
+                if(!publicacionModif) return BadRequest(new { Mensaje = "Ah ocurrido un error al intentar editar la publicacion" });
 
                 return NoContent();
 
             }
             catch (Exception ex)
             {
-                _logger.LogError(ex.Message);
+                _logger.LogError(ex, "Error al editar la publicacion");
                 return StatusCode(500);
             }
         }
@@ -175,7 +175,7 @@ namespace TuProyecto.Controllers
 
                 bool resultado = await _publicacionServicios.PausarPublicacion(publicacionID, usuarioId);
                 
-                if (!resultado) return NotFound(new { Mensaje = "Ah ocurrido un error al intentar pausar la publicacion" });
+                if (!resultado) return BadRequest(new { Mensaje = "Ah ocurrido un error al intentar pausar la publicacion" });
 
                 return NoContent();
 
@@ -210,7 +210,7 @@ namespace TuProyecto.Controllers
 
                 bool resultado = await _publicacionServicios.CancelarPublicacion(publicacionID,usuarioId);
 
-                if (!resultado) return NotFound(new { Mensaje = "Ah ocurrido un error al intentar cancelar la publicacion" });
+                if (!resultado) return BadRequest(new { Mensaje = "Ah ocurrido un error al intentar cancelar la publicacion" });
 
                 return NoContent();
             }
@@ -242,7 +242,7 @@ namespace TuProyecto.Controllers
 
                 bool resultado = await _publicacionServicios.ActivarPublicacion(publicacionID, nuevoStock.Public_Stock);
                 
-                if (!resultado) return NotFound(new { Mensaje = "Ah ocurrido un error al intentar activar la publicacion"});
+                if (!resultado) return BadRequest(new { Mensaje = "Ah ocurrido un error al intentar activar la publicacion"});
 
                 return NoContent();
 

@@ -63,7 +63,7 @@ namespace Datos
         }
 
         public async Task<bool> ActualizarUsuario(int pId, UsuarioModif pUsuarioModif)
-        {  
+        {
             using IDbConnection dbConnection = CreateConnection();
             dbConnection.Open();
 
@@ -104,7 +104,7 @@ namespace Datos
 
             int filasAfectadas = await dbConnection.ExecuteAsync(actualizarConsultaQuery, parametros);
 
-            return filasAfectadas > 0;   
+            return filasAfectadas > 0;
         }
     }
 }

@@ -28,14 +28,14 @@ namespace apiweb_ProyectoFinal.Controllers
         public async Task<IActionResult> IniciarSesion([FromBody] UsuarioLogin usuario)
         {
             try
-            {
-                Console.WriteLine(usuario.Usuario_Contra+" CONTROLADOR");
-                UsuarioSalida usuarioSalida = await _metodosDeValidacion.VerificarUsuario(usuario.Usuario_Email, usuario.Usuario_Contra);
+            {   
+                bool result = await _metodosDeValidacion.VerificarUsuario(usuario.Usuario_Email, usuario.Usuario_Contra);
 
-                if (usuarioSalida == null)
-                {
-                    return Unauthorized(new { Mensaje = "Email o contraseña no válidos." });
-                }
+                if (!result) return Unauthorized(new { Mensaje = "Email o contraseña no válidos." });
+
+                UsuarioSalida usuarioSalida = await _usuarioServicios.ObtenerUsuarioPorEmail(usuario.Usuario_Email);
+
+                if (usuarioSalida.Usuario_Estado == "Deshabilitado") return BadRequest(new {Mensaje = "Su usuario esta dado de baja"});
 
                 var token = _metodosDeValidacion.GenerarTokenAcceso(usuarioSalida);
 

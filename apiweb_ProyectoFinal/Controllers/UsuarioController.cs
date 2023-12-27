@@ -7,7 +7,7 @@ using Datos.Interfaces.IValidaciones;
 
 namespace apiWeb_MVC.Controllers
 {   
-    [ApiController] //ROLES: 2 = admin , 1= usuario
+    [ApiController] 
     [Route("Usuario")]
 
     public class UsuarioController : ControllerBase

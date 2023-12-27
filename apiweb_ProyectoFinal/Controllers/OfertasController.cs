@@ -26,7 +26,23 @@ namespace apiweb_ProyectoFinal.Controllers
             _ofertasServicios = ofertasServicios;
         }
 
-        [HttpGet("ObtenerOferta")] // controlar que no pueda subir publicaciones pausadas o canceladas
+        [HttpGet("ObtenerOfertas")]
+        public async Task<IActionResult> ObtenerOfertas()
+        {
+            try
+            {
+                List<OfertaSalida> ofertas = await _ofertasServicios.ObtenerOfertas();
+
+                return Ok(ofertas);
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError(ex, "Error Al obtener la oferta");
+                return StatusCode(500);
+            }
+        }
+
+        [HttpGet("ObtenerOferta")] 
         public async Task<IActionResult> ObtenerOferta([FromQuery] int idOferta)
         {
             try
@@ -39,54 +55,79 @@ namespace apiweb_ProyectoFinal.Controllers
             }
             catch (Exception ex)
             {
-                _logger.LogError(ex.Message);
+                _logger.LogError(ex,"Error Al obtener la oferta");
                 return StatusCode(500);
             }
         }
 
         [HttpGet("TusOfertas")]
-        public async Task<IActionResult> TusOfertas([FromQuery] int idOferta)
+        public async Task<IActionResult> TusOfertas()
         {
             try
             {
-                OfertaSalida oferta = await _ofertasServicios.ObtenerOfertaPorID(idOferta);
+                int usuarioID = await _metodosDeValidacion.ObtenerUsuarioIDToken();
 
-                if (oferta == null) return NotFound(new { Mensaje = "Oferta no encontrada" });
+                List<OfertaSalida> ofertas = await _ofertasServicios.ObtenerOfertasPorUsuarioID(usuarioID);
 
-                return Ok(oferta);
+                if (ofertas == null) return NotFound(new { Mensaje = "No se encontraron Ofertas" });
+
+                return Ok(ofertas);
             }
             catch (Exception ex)
             {
-                _logger.LogError(ex.Message);
+                _logger.LogError(ex, "Error Al obtener sus ofertas");
                 return StatusCode(500);
             }
         }
 
-        //[HttpPost("Crear")]
-        //[Authorize]
-        //public async Task<IActionResult> CrearPublicacion([FromBody] PublicacionCreacion oferta)
-        //{
-        //    try
-        //    {
-        //        if (!ModelState.IsValid) return BadRequest(ModelState);
+        [HttpPost("Crear")]
+        [Authorize]
+        public async Task<IActionResult> CrearOferta([FromBody] OfertaCreacion oferta)
+        {
+            try
+            {
+                if (!ModelState.IsValid) return BadRequest(ModelState);
 
-        //        int usuarioId = await _metodosDeValidacion.ObtenerUsuarioIDToken();
-        //        publicacion.Public_UsuarioID = usuarioId;
+                OfertaSalidaC ofertaSalida = await _ofertasServicios.CrearOferta(oferta);
 
-        //        PublicacionSalidaC publicacionSalida = await _publicacionServicios.CrearPublicacion(oferta);
+                return CreatedAtAction(nameof(ObtenerOferta), new { id = ofertaSalida.Oferta_ID }, ofertaSalida);
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError(ex, "Error Al obtener sus ofertas");
+                return StatusCode(500);
+            }
+        }
 
-        //        if (publicacionSalida != null)
-        //        {
-        //            return CreatedAtAction(nameof(ObtenerPublicacion), new { id = publicacionSalida.Public_ID }, publicacionSalida);
-        //        }
+        [HttpPatch("EditarOferta")]
+        [Authorize]
 
-        //        return BadRequest(new { Mensaje = "Error al crear la publicación." });
-        //    }
-        //    catch (Exception ex)
-        //    {
-        //        _logger.LogError(ex.Message);
-        //        return StatusCode(500);
-        //    }
-        //}
+        public async Task<IActionResult> EditarOferta([FromQuery] int ofertaID, [FromBody] OfertaModif ofertaEntrada)
+        {
+            try
+            {
+                OfertaSalida oferta = await _ofertasServicios.ObtenerOfertaPorID(ofertaID);
+
+                if (oferta == null) return NotFound(new { Mensaje = "Oferta no encontrada" });
+                
+                int usuarioID = await _metodosDeValidacion.ObtenerUsuarioIDToken();
+
+                bool autoria = await _ofertasServicios.VerificarAutoria(usuarioID, ofertaEntrada.Oferta_ProdOfer);
+
+                if ( (usuarioID != oferta.Oferta_UsuarioID) || !autoria) return Forbid();
+
+                bool ofertaModif = await _ofertasServicios.EditarOferta(ofertaID, ofertaEntrada);
+
+                if (!ofertaModif) return BadRequest(new { Mensaje = "Ah ocurrido un error al intentar editar la oferta" });
+
+                return NoContent();
+
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError(ex, "Error al editar la oferta");
+                return StatusCode(500);
+            }
+        }
     }
 }

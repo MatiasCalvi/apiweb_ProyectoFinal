@@ -126,26 +126,10 @@ namespace Datos.Servicios
 
         public async Task<bool> EditarPublicacion(int pId, PublicacionModif pPublicacionModif)
         {
-            PublicacionSalidaM publicacionActual = await ObtenerPublicacionPorIDM(pId);
             DateTime fechaActual = DateTime.Now;
+            pPublicacionModif.Public_FModif = fechaActual;
 
-            publicacionActual.Public_Nombre = pPublicacionModif.Public_Nombre ?? publicacionActual.Public_Nombre;
-            publicacionActual.Public_Descripcion = pPublicacionModif.Public_Descripcion ?? publicacionActual.Public_Descripcion;
-            publicacionActual.Public_Precio = pPublicacionModif.Public_Precio ?? publicacionActual.Public_Precio;
-            publicacionActual.Public_Imagen = pPublicacionModif.Public_Imagen ?? publicacionActual.Public_Imagen;
-            publicacionActual.Public_Stock = pPublicacionModif.Public_Stock ?? publicacionActual.Public_Stock;
-
-            PublicacionModif publicacion = new PublicacionModif
-            {
-                Public_Nombre = publicacionActual.Public_Nombre,
-                Public_Descripcion = publicacionActual.Public_Descripcion,
-                Public_Precio = publicacionActual.Public_Precio,
-                Public_Imagen = publicacionActual.Public_Imagen,
-                Public_Stock = publicacionActual.Public_Stock,
-                Public_FModif = fechaActual
-            };
-
-            bool actualizado = await _daoBDPublicaciones.EditarPublicacion(pId, publicacion);
+            bool actualizado = await _daoBDPublicaciones.EditarPublicacion(pId, pPublicacionModif);
 
             return actualizado;
         }

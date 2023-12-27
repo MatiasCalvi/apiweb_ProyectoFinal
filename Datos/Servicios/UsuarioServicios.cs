@@ -71,9 +71,9 @@ namespace Datos.Servicios
                 bool resultado = await _daoBDUsuarios.ActualizarUsuario(pId, usuarioActual);
 
                 return resultado;
-               
+
             }
-            
+
             return false;
         }
     }
