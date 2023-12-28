@@ -35,7 +35,8 @@ namespace Datos
                 {
                     dbConnection.Open();
 
-                    var refreshToken = await dbConnection.QueryFirstOrDefaultAsync<string>(_accesoQuerys.existeTokenQuery, new { Usuario_ID = pUsuarioId }
+                    var refreshToken = await dbConnection.QueryFirstOrDefaultAsync<string>(_accesoQuerys.existeTokenQuery, 
+                                                                                           new { Usuario_ID = pUsuarioId }
                     );
 
                     return refreshToken;
@@ -54,15 +55,20 @@ namespace Datos
                 using IDbConnection dbConnection = CreateConnection();
                 dbConnection.Open();
 
-                var existingToken = await dbConnection.QueryFirstOrDefaultAsync<string>(_accesoQuerys.existeTokenQuery, new { Usuario_ID = pUsuarioId });
+                var existingToken = await dbConnection.QueryFirstOrDefaultAsync<string>(_accesoQuerys.existeTokenQuery, 
+                                                                                        new { Usuario_ID = pUsuarioId });
 
                 if (existingToken != null)
                 {
-                    await dbConnection.ExecuteAsync(_accesoQuerys.actualizarTokenQuery, new { Usuario_ID = pUsuarioId, RefreshToken = pRefreshToken });
+                    await dbConnection.ExecuteAsync(_accesoQuerys.actualizarTokenQuery,
+                                                    new { Usuario_ID = pUsuarioId, 
+                                                    RefreshToken = pRefreshToken });
                 }
                 else
                 {
-                    await dbConnection.ExecuteAsync(_accesoQuerys.crearTokenQuery, new { Usuario_ID = pUsuarioId, RefreshToken = pRefreshToken });
+                    await dbConnection.ExecuteAsync(_accesoQuerys.crearTokenQuery, 
+                                                    new { Usuario_ID = pUsuarioId, 
+                                                    RefreshToken = pRefreshToken });
                 }
             }
             catch (Exception ex)
@@ -77,7 +83,8 @@ namespace Datos
             {
                 using IDbConnection dbConnection = CreateConnection();
                 dbConnection.Open();
-                await dbConnection.ExecuteAsync(_accesoQuerys.eliminarTokenQuery, new { Usuario_ID = pUsuarioId });
+                await dbConnection.ExecuteAsync(_accesoQuerys.eliminarTokenQuery, 
+                                                new { Usuario_ID = pUsuarioId });
             }
             catch (Exception ex)
             {

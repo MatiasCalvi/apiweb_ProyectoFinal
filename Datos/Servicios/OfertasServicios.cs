@@ -85,5 +85,19 @@ namespace Datos.Servicios
  
             return actualizado;
         }
+
+        public async Task<bool> EliminarOferta(int pOfertaID)
+        {
+            bool resultado = await _daoBDOfertas.EliminarOferta(pOfertaID,null);
+
+            return resultado;
+        }
+
+        public async Task<bool> EliminarOfertas(int pUsuarioID)
+        {
+            bool resultado = await _daoBDOfertas.EliminarOferta(null, pUsuarioID);
+
+            return resultado;
+        }
     }
 }

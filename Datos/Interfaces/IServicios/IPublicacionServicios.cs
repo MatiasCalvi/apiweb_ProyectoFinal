@@ -22,5 +22,7 @@ namespace Datos.Interfaces.IServicios
         Task<bool> PausarPublicacionAdmin(int pId);
         Task<bool> CancelarPublicacionAdmin(int pId);
         Task<bool> ActivarPublicacionAdmin(int pId);
+        Task<bool> EliminarPublicacion(int pPublicacionID);
+        Task<bool> EliminarPublicaciones(int pUsuarioID);
     }
 }

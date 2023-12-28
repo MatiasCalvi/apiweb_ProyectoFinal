@@ -5,6 +5,7 @@ using Datos.Interfaces.IDaos;
 using Datos.Interfaces.IQuerys;
 using Datos.Modelos;
 using Datos.Modelos.DTO;
+using Datos.Querys;
 using Microsoft.Extensions.Options;
 using MySql.Data.MySqlClient;
 using System.Data;
@@ -87,7 +88,9 @@ namespace Datos
             using IDbConnection dbConnection = CreateConnection();
             dbConnection.Open();
 
-            int count = await dbConnection.ExecuteScalarAsync<int>(_ofertaQuerys.verificarCreador, new { Public_UsuarioID = usuarioId, Public_ID = ofertaID });
+            int count = await dbConnection.ExecuteScalarAsync<int>(_ofertaQuerys.verificarCreador, 
+                                                                       new { Public_UsuarioID = usuarioId, 
+                                                                       Public_ID = ofertaID });
 
             return count == 1;
         }
@@ -137,7 +140,9 @@ namespace Datos
                 parameters.Add("@Oferta_ID", dbType: DbType.Int32, direction: ParameterDirection.Output);
                 parameters.Add("pProductosIds", string.Join(",", pOferta.Oferta_ProdOfer), DbType.String);
 
-                OfertaSalida ofertaSalida = await dbConnection.QueryFirstOrDefaultAsync<OfertaSalida>(_ofertaQuerys.procesoAlmCrear, parameters, commandType: CommandType.StoredProcedure);
+                OfertaSalida ofertaSalida = await dbConnection.QueryFirstOrDefaultAsync<OfertaSalida>(_ofertaQuerys.procesoAlmCrear,
+                                                                                                        parameters, 
+                                                                                                        commandType: CommandType.StoredProcedure);
 
                 return ofertaSalida;
             }
@@ -162,16 +167,34 @@ namespace Datos
             parametros.Add("pOfertaID", pId);
             parametros.Add("pOfertaFModif", pOfertaModif.Oferta_FModif);
             
-
-            string actualizarConsultaQuery = _ofertaQuerys.procesoAlmEdit;
             int filasAfectadas = await dbConnection.ExecuteAsync(
-                actualizarConsultaQuery,
+                _ofertaQuerys.procesoAlmEdit,
                 parametros,
                 commandType: CommandType.StoredProcedure
             );
            
             return filasAfectadas > 0;
         }
+
+        public async Task<bool> EliminarOferta(int? pOfertaID, int? pUsuarioID)
+        {
+            try
+            {
+                using IDbConnection dbConnection = CreateConnection();
+                dbConnection.Open();
+
+                bool filas = await dbConnection.ExecuteScalarAsync<bool>(_ofertaQuerys.procesoAlmElim,
+                    new { OfertaID = pOfertaID, UsuarioID = pUsuarioID },
+                    commandType: CommandType.StoredProcedure);
+
+                return filas;
+            }
+            catch (Exception ex)
+            {
+                throw new DatabaseTransactionException($"Error al eliminar la oferta y sus publicaciones: {ex.Message}");
+            }
+        }
+
     }
 }
 

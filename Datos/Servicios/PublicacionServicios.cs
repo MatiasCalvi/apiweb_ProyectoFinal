@@ -133,5 +133,19 @@ namespace Datos.Servicios
 
             return actualizado;
         }
+
+        public async Task<bool> EliminarPublicacion(int pPublicacionID)
+        {
+            bool resultado = await _daoBDPublicaciones.EliminarPublicacion(pPublicacionID, null);
+
+            return resultado;
+        }
+
+        public async Task<bool> EliminarPublicaciones(int pUsuarioID)
+        {
+            bool resultado = await _daoBDPublicaciones.EliminarPublicacion(null, pUsuarioID);
+
+            return resultado;
+        }
     }
 }

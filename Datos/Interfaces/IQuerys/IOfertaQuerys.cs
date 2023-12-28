@@ -11,5 +11,6 @@
         public string verificarCreador { get; }
         public string procesoAlmCrear { get; }
         public string procesoAlmEdit { get; }
+        public string procesoAlmElim { get; }
     }
 }

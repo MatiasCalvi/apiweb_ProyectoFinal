@@ -54,7 +54,8 @@ namespace Datos
             using IDbConnection dbConnection = CreateConnection();
             dbConnection.Open();
 
-            return (await dbConnection.QueryAsync<PublicacionSalida>(_adminQuery.obtenerPublicacionesDeUnUsuarioQuery, new { Public_UsuarioID = pUsuarioID })).ToList();
+            return (await dbConnection.QueryAsync<PublicacionSalida>(_adminQuery.obtenerPublicacionesDeUnUsuarioQuery, 
+                                                                        new { Public_UsuarioID = pUsuarioID })).ToList();
         }
 
         public async Task<List<CarritoSalida>> ObtenerCarritos()
@@ -62,7 +63,8 @@ namespace Datos
             using IDbConnection dbConnection = CreateConnection();
             dbConnection.Open();
 
-            List<dynamic> listaDinamica = (await dbConnection.QueryAsync<dynamic>(_adminQuery.obtenerCarritosQuery)).ToList(); 
+            List<dynamic> listaDinamica = (await dbConnection.QueryAsync<dynamic>(_adminQuery.obtenerCarritosQuery)).ToList();
+            
             List<CarritoSalida> listaCarritoSalida = new List<CarritoSalida>();
             
             foreach (dynamic obj in listaDinamica) 
@@ -94,7 +96,8 @@ namespace Datos
                 using IDbConnection dbConnection = CreateConnection();
                 dbConnection.Open();
 
-                return (await dbConnection.QueryFirstOrDefaultAsync<int>(_adminQuery.verificarUsuarioHabilitadoQuery, new { UsuarioId = usuarioId })) == 1;
+                return (await dbConnection.QueryFirstOrDefaultAsync<int>(_adminQuery.verificarUsuarioHabilitadoQuery, 
+                                                                            new { UsuarioId = usuarioId })) == 1;
             }
             catch (Exception ex)
             {
@@ -109,7 +112,8 @@ namespace Datos
                 using IDbConnection dbConnection = CreateConnection();
                 dbConnection.Open();
 
-                return (await dbConnection.QueryFirstOrDefaultAsync<int>(_adminQuery.verificarUsuarioDeshabilitadoQuery, new { UsuarioId = usuarioId })) == 1;
+                return (await dbConnection.QueryFirstOrDefaultAsync<int>(_adminQuery.verificarUsuarioDeshabilitadoQuery, 
+                                                                            new { UsuarioId = usuarioId })) == 1;
             }
             catch (Exception ex)
             {
@@ -123,7 +127,8 @@ namespace Datos
             {
                 using IDbConnection dbConnection = CreateConnection();
                 dbConnection.Open();
-                int filasAfectadas = await dbConnection.ExecuteAsync(_adminQuery.habilitarUsuarioQuery, new { Usuario_ID = pUsuarioId });
+                int filasAfectadas = await dbConnection.ExecuteAsync(_adminQuery.habilitarUsuarioQuery, 
+                                                                        new { Usuario_ID = pUsuarioId });
 
                 return filasAfectadas > 0;
             }
@@ -139,7 +144,8 @@ namespace Datos
             {
                 using IDbConnection dbConnection = CreateConnection();
                 dbConnection.Open();
-                int filasAfectadas = await dbConnection.ExecuteAsync(_adminQuery.desactivarUsuarioQuery, new { Usuario_ID = pUsuarioId });
+                int filasAfectadas = await dbConnection.ExecuteAsync(_adminQuery.desactivarUsuarioQuery, 
+                                                                        new { Usuario_ID = pUsuarioId });
 
                 return filasAfectadas > 0;
             }
@@ -154,7 +160,8 @@ namespace Datos
            
                 using IDbConnection dbConnection = CreateConnection();
                 dbConnection.Open();
-                int filasAfectadas = await dbConnection.ExecuteAsync(_adminQuery.asignarRolAAdminQuery, new { Usuario_ID = pUsuarioId });
+                int filasAfectadas = await dbConnection.ExecuteAsync(_adminQuery.asignarRolAAdminQuery, 
+                                                                        new { Usuario_ID = pUsuarioId });
 
                 return filasAfectadas > 0;
             
@@ -167,7 +174,8 @@ namespace Datos
                 using IDbConnection dbConnection = CreateConnection();
                 dbConnection.Open();
 
-                int filasAfectadas = await dbConnection.ExecuteAsync(_adminQuery.asignarRolAUsuarioQuery, new { Usuario_ID = pUsuarioId });
+                int filasAfectadas = await dbConnection.ExecuteAsync(_adminQuery.asignarRolAUsuarioQuery, 
+                                                                        new { Usuario_ID = pUsuarioId });
 
                 return filasAfectadas > 0;
             }

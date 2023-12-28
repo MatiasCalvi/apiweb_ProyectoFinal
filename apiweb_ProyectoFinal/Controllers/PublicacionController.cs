@@ -93,9 +93,9 @@ namespace TuProyecto.Controllers
             }
         }
 
-        [HttpPost("CrearPublicacion")]
+        [HttpPost("Crear")]
         [Authorize]
-        public async Task<IActionResult> CrearPublicacion([FromBody] PublicacionCreacion publicacion)
+        public async Task<IActionResult> Crear([FromBody] PublicacionCreacion publicacion)
         {
             try 
             {
@@ -120,10 +120,10 @@ namespace TuProyecto.Controllers
             }
         }
 
-        [HttpPatch("EditarPublicacion")]
+        [HttpPatch("Editar")]
         [Authorize]
 
-        public async Task<IActionResult> EditarPublicacion([FromQuery]int publicacionID,[FromBody] PublicacionModif publicacionEntrada) 
+        public async Task<IActionResult> Editar([FromQuery]int publicacionID,[FromBody] PublicacionModif publicacionEntrada) 
         {
             try
             {
@@ -154,9 +154,9 @@ namespace TuProyecto.Controllers
             }
         }
 
-        [HttpPatch("PausarPublicacion")]
+        [HttpPatch("Pausar")]
         [Authorize]
-        public async Task<IActionResult> PausarPublicacion([FromQuery] int publicacionID) 
+        public async Task<IActionResult> Pausar([FromQuery] int publicacionID) 
         {
             try
             {
@@ -187,9 +187,9 @@ namespace TuProyecto.Controllers
             }
         }
 
-        [HttpPatch("CancelarPublicacion")]
+        [HttpPatch("Cancelar")]
         [Authorize]
-        public async Task<IActionResult> CancelarPublicacion([FromQuery] int publicacionID)
+        public async Task<IActionResult> Cancelar([FromQuery] int publicacionID)
         {
             try
             {
@@ -221,9 +221,9 @@ namespace TuProyecto.Controllers
             }
         }
 
-        [HttpPatch("ActivarPublicacion")]
+        [HttpPatch("Activar")]
         [Authorize]
-        public async Task<IActionResult> ActivarPublicacion([FromQuery] int publicacionID,[FromBody] PublicacionRelanzada nuevoStock )
+        public async Task<IActionResult> Activar([FromQuery] int publicacionID,[FromBody] PublicacionRelanzada nuevoStock )
         {
             try
             {
@@ -250,6 +250,60 @@ namespace TuProyecto.Controllers
             catch (Exception ex)
             {
                 _logger.LogError(ex, "Error al activar la publicacion");
+                return StatusCode(500);
+            }
+        }
+
+        [HttpDelete("Eliminar")]
+        [Authorize]
+        public async Task<IActionResult> Eliminar([FromQuery] int publicacionID)
+        {
+            try
+            {
+                PublicacionSalida publicacion = await _publicacionServicios.ObtenerPublicacionPorID(publicacionID);
+
+                if (publicacion == null)
+                {
+                    return NotFound(new { Mensaje = $"Publicacion con ID: {publicacionID} no encontrada" });
+                }
+
+                int usuarioId = await _metodosDeValidacion.ObtenerUsuarioIDToken();
+
+                if (usuarioId != publicacion.Public_UsuarioID) return Forbid();
+
+                bool resultado = await _publicacionServicios.EliminarPublicacion(publicacionID);
+
+                if (!resultado) return BadRequest(new { Mensaje = "Ah ocurrido un error al intentar eliminar la publicacion" });
+
+                return NoContent();
+
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError(ex, "Error al eliminar la publicacion");
+                return StatusCode(500);
+            }
+        }
+
+        [HttpDelete("Eliminar")]
+        [Authorize]
+        public async Task<IActionResult> EliminarTodo()
+        {
+            try
+            {
+
+                int usuarioId = await _metodosDeValidacion.ObtenerUsuarioIDToken();
+
+                bool resultado = await _publicacionServicios.EliminarPublicaciones(usuarioId);
+
+                if (!resultado) return BadRequest(new { Mensaje = "Ah ocurrido un error al intentar eliminar las publicaciones" });
+
+                return NoContent();
+
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError(ex, "Error al eliminar la publicacion");
                 return StatusCode(500);
             }
         }

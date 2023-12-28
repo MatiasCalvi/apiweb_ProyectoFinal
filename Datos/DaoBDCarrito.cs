@@ -34,7 +34,9 @@ namespace Datos
             using IDbConnection dbConnection = CreateConnection();
             dbConnection.Open();
             
-            List<dynamic> listaDinamica = (await dbConnection.QueryAsync<dynamic>(_carritoQuery.obtenerCarritoQuery, new { Carrito_UsuarioID = pUsuarioID })).ToList(); 
+            List<dynamic> listaDinamica = (await dbConnection.QueryAsync<dynamic>(_carritoQuery.obtenerCarritoQuery, 
+                                                                                    new { Carrito_UsuarioID = pUsuarioID })).ToList();
+            
             List<CarritoSalida> listaCarritoSalida = new List<CarritoSalida>(); 
             
             foreach (dynamic obj in listaDinamica) 
@@ -66,7 +68,11 @@ namespace Datos
                 using IDbConnection dbConnection = CreateConnection();
                 dbConnection.Open();
                 
-                int result = await dbConnection.ExecuteAsync(_carritoQuery.agregarProducto, new { Carrito_UsuarioID = pUsuarioID, Carrito_PID = pCarrito.Carrito_PID, Carrito_ProdUnidades = pCarrito.Carrito_ProdUnidades });
+                int result = await dbConnection.ExecuteAsync(_carritoQuery.agregarProducto, 
+                                                                new { Carrito_UsuarioID = pUsuarioID, 
+                                                                Carrito_PID = pCarrito.Carrito_PID, 
+                                                                Carrito_ProdUnidades = pCarrito.Carrito_ProdUnidades 
+                                                                });
                 return result > 0;
             }
             catch (Exception ex)
@@ -82,7 +88,8 @@ namespace Datos
                 using IDbConnection dbConnection = CreateConnection();
                 dbConnection.Open();
 
-                var result = await dbConnection.ExecuteAsync(_carritoQuery.agregarAlHistorialQuery, pHistoriaCompra );
+                var result = await dbConnection.ExecuteAsync(_carritoQuery.agregarAlHistorialQuery, 
+                                                                pHistoriaCompra );
 
                 return result > 0;
             }
@@ -99,7 +106,9 @@ namespace Datos
                 using IDbConnection dbConnection = CreateConnection();
                 dbConnection.Open();
 
-                int result = await dbConnection.ExecuteAsync(_carritoQuery.eliminarQuery, new { Carrito_UsuarioID = pUsuarioID, Carrito_PID = pPublicacionID });
+                int result = await dbConnection.ExecuteAsync(_carritoQuery.eliminarQuery, 
+                                                                new { Carrito_UsuarioID = pUsuarioID, 
+                                                                Carrito_PID = pPublicacionID });
 
                 return result > 0;
             }
@@ -116,7 +125,8 @@ namespace Datos
                 using IDbConnection dbConnection = CreateConnection();
                 dbConnection.Open();
 
-                int result = await dbConnection.ExecuteAsync(_carritoQuery.eliminarTodoQuery, new { Carrito_UsuarioID = pUsuarioID});
+                int result = await dbConnection.ExecuteAsync(_carritoQuery.eliminarTodoQuery, 
+                                                                new { Carrito_UsuarioID = pUsuarioID});
 
                 return result > 0;
             }
@@ -133,7 +143,9 @@ namespace Datos
                 using IDbConnection dbConnection = CreateConnection();
                 dbConnection.Open();
 
-                int result = await dbConnection.QueryFirstOrDefaultAsync<int>(_carritoQuery.verificarDuplicado, new { Carrito_UsuarioID = pUsuarioID, Carrito_PID = pPublicacionID });
+                int result = await dbConnection.QueryFirstOrDefaultAsync<int>(_carritoQuery.verificarDuplicado, 
+                                                                                new { Carrito_UsuarioID = pUsuarioID, 
+                                                                                Carrito_PID = pPublicacionID });
 
                 return result > 0;
             }
