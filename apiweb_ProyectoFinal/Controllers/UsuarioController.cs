@@ -7,7 +7,7 @@ using Datos.Interfaces.IValidaciones;
 
 namespace apiWeb_MVC.Controllers
 {   
-    [ApiController] //ROLES: 2 = admin , 1= usuario
+    [ApiController] 
     [Route("Usuario")]
 
     public class UsuarioController : ControllerBase
@@ -24,7 +24,7 @@ namespace apiWeb_MVC.Controllers
         }
 
         [HttpGet("ObtenerUsuario")]
-        [Authorize(Roles = "2")]
+
         public async Task<IActionResult> ObtenerUsuario([FromQuery] int id)
         {
             try
@@ -37,7 +37,7 @@ namespace apiWeb_MVC.Controllers
             }
             catch (Exception ex)
             {
-                Console.WriteLine(new { ErrorDetalle = ex.Message });
+                _logger.LogError(ex, "Error al obtener el usuario");
                 return StatusCode(500);
             }
         }
@@ -64,12 +64,12 @@ namespace apiWeb_MVC.Controllers
             }
             catch (Exception ex)
             {
-                Console.WriteLine(new { ErrorDetalle = ex.Message });
+                _logger.LogError(ex, "Error al registrarse");
                 return StatusCode(500);
             }
         }
 
-        [HttpPatch("ActualizarUsuario")] // *--> no se puede cambiar el Rol con este controlador
+        [HttpPatch("ActualizarUsuario")] 
         [Authorize]
         public async Task<IActionResult> ActualizarUsuario([FromBody] UsuarioModif usuario)
         {   
@@ -90,7 +90,7 @@ namespace apiWeb_MVC.Controllers
             }
             catch (Exception ex)
             {
-                Console.WriteLine(new { ErrorDetalle = ex.Message });
+                _logger.LogError(ex, "Error al actualizar el usuario");
                 return StatusCode(500);
             }
         }

@@ -49,33 +49,19 @@ namespace Datos.Validaciones
             return BCrypt.Net.BCrypt.Verify(contraHasheada, pContraHasheada);
         }
 
-        public async Task<UsuarioSalida> VerificarUsuario(string pEmail, string pContra)
+        public async Task<bool> VerificarUsuario(string pEmail, string pContra)
         {
             try
             {
                 UsuarioModif usuario = await _daoBDUsuarios.ObtenerUsuarioPorEmailU(pEmail);
-                if (usuario == null)
-                {
-                    return null;
-                }
-
+                
+                if (usuario == null) return false;    
+               
                 bool passwordMatch = await VerificarContra(pContra, usuario.Usuario_Contra);
-                if (passwordMatch)
-                {
-                    UsuarioSalida usuarioSalida = new UsuarioSalida
-                    {
-                        Usuario_ID = usuario.Usuario_ID,
-                        Usuario_Nombre = usuario.Usuario_Nombre,
-                        Usuario_Apellido = usuario.Usuario_Apellido,
-                        Usuario_Email = usuario.Usuario_Email,
-                        Usuario_Role = (int)usuario.Usuario_Role
-                    };
-                    return usuarioSalida;
-                }
-                else
-                {
-                    return null;
-                }
+                
+                if (!passwordMatch) return false;
+
+                return true;
             }
             catch (Exception ex)
             {
@@ -104,6 +90,20 @@ namespace Datos.Validaciones
                 return userId;
             }
             throw new ApplicationException("No se pudo extraer Usuario_Id del token.");
+        }
+
+        public async Task<string> ObtenerUsuarioEstadoToken()
+        {
+            var usuarioEstadoClaim = _httpContextAccessor.HttpContext.User.FindFirst("estado");
+            string usuarioEstado;
+
+            if (usuarioEstadoClaim != null)
+            {
+                usuarioEstado = usuarioEstadoClaim.Value;
+                return usuarioEstado;
+            }
+
+            throw new ApplicationException("No se pudo extraer Usuario_Estado del token.");
         }
 
         public async Task<int> ObtenerUsuarioIDRefreshToken(string refreshToken)
@@ -146,6 +146,7 @@ namespace Datos.Validaciones
                     new Claim(ClaimTypes.Role, pUsuario.Usuario_Role.ToString()),
                     new Claim(ClaimTypes.Name, pUsuario.Usuario_Nombre),
                     new Claim(ClaimTypes.Email, pUsuario.Usuario_Email),
+                    new Claim("estado", pUsuario.Usuario_Estado)
                 };
             var now = DateTime.Now;
             var expiration = now.AddMinutes(4);

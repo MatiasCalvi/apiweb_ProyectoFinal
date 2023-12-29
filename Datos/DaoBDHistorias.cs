@@ -31,7 +31,10 @@ namespace Datos
             using IDbConnection dbConnection = CreateConnection();
             dbConnection.Open();
 
-           return (await dbConnection.QueryAsync<HistoriaCompraSalida>(_historiasQuery.obtenerHistorialQuery, new { HC_UsuarioID = pUsuarioID })).ToList();
+           return (await dbConnection.QueryAsync<HistoriaCompraSalida>(
+               _historiasQuery.obtenerHistorialQuery, 
+               new { HC_UsuarioID = pUsuarioID }
+           )).ToList();
         }
     }
 }

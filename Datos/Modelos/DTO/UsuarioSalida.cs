@@ -8,8 +8,8 @@ namespace Datos.Modelos.DTO
         public string Usuario_Nombre { get; set; }
         public string Usuario_Apellido { get; set; }
         public string Usuario_Email { get; set; }
-        public int Usuario_Role { get; set; }
-
+        public string Usuario_Role { get; set; }
+        public string Usuario_Estado { get; set; }
         public UsuarioSalida() { }
     }
     public class UsuarioSalidaC : UsuarioSalida // *--> para crear el usuario
@@ -21,10 +21,6 @@ namespace Datos.Modelos.DTO
     {
         public DateTime? Usuario_FModif { get; set; }
         public UsuarioSalidaU() { }
-    }
-    public class UsuarioSalidaE : UsuarioSalida
-    {
-        public int Usuario_Estado { get; set; }
     }
 }   
 

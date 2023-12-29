@@ -1,10 +1,8 @@
 ﻿using Datos.Interfaces.IServicios;
 using Datos.Interfaces.IValidaciones;
 using Datos.Modelos.DTO;
-using Datos.Modelos;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
-using System.Net;
 
 namespace apiweb_ProyectoFinal.Controllers
 {
@@ -39,13 +37,13 @@ namespace apiweb_ProyectoFinal.Controllers
             }
             catch (Exception ex)
             {
-                Console.WriteLine(new { ErrorDetalle = ex.Message });
+                _logger.LogError(ex, "Error al obtener el carrito");
                 return StatusCode(500);
             }
         }
 
         [HttpPost("AgregarAlCarrito")]
-        public async Task<IActionResult> AgregarAlCarrito([FromBody] Carrito carrito)
+        public async Task<IActionResult> AgregarAlCarrito([FromBody] CarritoCreacion carrito)
         {
             try
             {
@@ -68,13 +66,13 @@ namespace apiweb_ProyectoFinal.Controllers
             }
             catch (Exception ex)
             {
-                Console.WriteLine(new { ErrorDetalle = ex.Message });
+                _logger.LogError(ex, $"Error al agregar el producto: {carrito.Carrito_PID} al carrito");
                 return StatusCode(500);
             }
         }
 
         [HttpPatch("Comprar")]
-        public async Task<IActionResult> Comprar([FromBody] Carrito carrito)
+        public async Task<IActionResult> Comprar([FromBody] CarritoCreacion carrito)
         {
             try
             {
@@ -94,7 +92,7 @@ namespace apiweb_ProyectoFinal.Controllers
             }
             catch (Exception ex)
             {
-                Console.WriteLine(new { ErrorDetalle = ex.Message });
+                _logger.LogError(ex, $"Error al comprar el producto: {carrito.Carrito_PID}");
                 return StatusCode(500);
             }
         }
@@ -123,7 +121,7 @@ namespace apiweb_ProyectoFinal.Controllers
             }
             catch (Exception ex)
             {
-                Console.WriteLine(new { ErrorDetalle = ex.Message });
+                _logger.LogError(ex, "Error al comprar los productos");
                 return StatusCode(500);
             }
         }
@@ -148,13 +146,13 @@ namespace apiweb_ProyectoFinal.Controllers
             }
             catch (Exception ex)
             {
-                Console.WriteLine(new { ErrorDetalle = ex.Message });
+                _logger.LogError(ex, $"Error al eliminar el producto: {carrito.Carrito_PID}");
                 return StatusCode(500);
             }
         }
 
-        [HttpDelete("EliminarTodo")]
-        public async Task<IActionResult> EliminarTodo()
+        [HttpDelete("VaciarCarrito")]
+        public async Task<IActionResult> VaciarCarrito()
         {
             try
             {
@@ -168,7 +166,7 @@ namespace apiweb_ProyectoFinal.Controllers
             }
             catch (Exception ex)
             {
-                Console.WriteLine(new { ErrorDetalle = ex.Message });
+                _logger.LogError(ex, "Error al vaciar el carrito");
                 return StatusCode(500);
             }
         }

@@ -24,7 +24,7 @@ namespace Datos.Servicios
             return await _daoBDCarrito.ObtenerCarrito(pUsuarioID);
         }
 
-        public async Task<bool> Agregar(int pUsuarioID, Carrito pCarrito)
+        public async Task<bool> Agregar(int pUsuarioID, CarritoCreacion pCarrito)
         {
 
             bool result = await _daoBDCarrito.Agregar(pUsuarioID, pCarrito);
@@ -68,7 +68,7 @@ namespace Datos.Servicios
 
         public async Task<bool> ReducirStock (int publicacionID, int unidades)
         {
-            PublicacionSalidaE publicacion = await _publicacionServicios.ObtenerPublicacionPorIDE(publicacionID);
+            PublicacionSalida publicacion = await _publicacionServicios.ObtenerPublicacionPorID(publicacionID);
 
             if (publicacion.Public_Stock < unidades) return false;
 
@@ -87,8 +87,8 @@ namespace Datos.Servicios
 
             if (publicacion.Public_Stock == 0)
             {
-                publicacion.Public_Estado = 4;
-                await _publicacionServicios.PausarPublicacion(publicacionID, publicacion.Public_UsuarioID);
+                publicacionFinal.Public_Estado = 4;
+                await _publicacionServicios.CambiarEstadoPublicacion(publicacionID,4);
                                                                                                                     //optimizar esto
                 await _publicacionServicios.EditarPublicacion(publicacionID, publicacionFinal);
 

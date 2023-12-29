@@ -2,23 +2,24 @@
 using Datos.Interfaces.IValidaciones;
 using Datos.Modelos;
 using Datos.Modelos.DTO;
-using Datos.Servicios;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
-using System.Text.Json;
 
 namespace TuProyecto.Controllers
 {
     [ApiController]
     [Route("Publicacion")]
 
-    public class PublicacionServiciosController : ControllerBase
+    public class PublicacionController : ControllerBase
     {
         private readonly IPublicacionServicios _publicacionServicios;
         private readonly IMetodosDeValidacion _metodosDeValidacion;
 
-        public PublicacionServiciosController(IPublicacionServicios publicacionServicios, IMetodosDeValidacion metodosDeValidacion)
+        private readonly ILogger<PublicacionController> _logger;
+
+        public PublicacionController(ILogger<PublicacionController>logger,IPublicacionServicios publicacionServicios, IMetodosDeValidacion metodosDeValidacion)
         {
+            _logger = logger;
             _publicacionServicios = publicacionServicios;
             _metodosDeValidacion = metodosDeValidacion;
         }
@@ -33,7 +34,8 @@ namespace TuProyecto.Controllers
             }
             catch (Exception ex)
             {
-                return StatusCode(500, new { Msj = "Error durante la busqueda", Detalle = ex.Message });
+                _logger.LogError(ex, "Error al Obtener las publicaciones");
+                return StatusCode(500);
             }
         }
 
@@ -48,7 +50,8 @@ namespace TuProyecto.Controllers
             }
             catch (Exception ex)
             {
-                return StatusCode(500, new { Msj = "Error durante la busqueda", Detalle = ex.Message });
+                _logger.LogError(ex, "Error al Obtener las publicaciones");
+                return StatusCode(500);
             }
         }
 
@@ -65,13 +68,14 @@ namespace TuProyecto.Controllers
             }
             catch (Exception ex)
             {
-                return StatusCode(500, new { Msj = "Error durante la busqueda", Detalle = ex.Message });
+                _logger.LogError(ex, "Error al obtener la publicacion");
+                return StatusCode(500);
             }
         }
 
-        [HttpGet("Publicaciones")] 
+        [HttpGet("TusPublicaciones")] 
         [Authorize]
-        public async Task<IActionResult> Publicaciones()
+        public async Task<IActionResult> TusPublicaciones()
         {
             try
             {
@@ -82,13 +86,14 @@ namespace TuProyecto.Controllers
             }
             catch (Exception ex)
             {
-                return StatusCode(500, new { Msj = "Error durante la busqueda", Detalle = ex.Message });
+                _logger.LogError(ex,"Error al obtener sus publicaciones");
+                return StatusCode(500);
             }
         }
 
-        [HttpPost("CrearPublicacion")]
+        [HttpPost("Crear")]
         [Authorize]
-        public async Task<IActionResult> CrearPublicacion([FromBody] PublicacionCreacion publicacion)
+        public async Task<IActionResult> Crear([FromBody] PublicacionCreacion publicacion)
         {
             try 
             {
@@ -108,15 +113,15 @@ namespace TuProyecto.Controllers
             }
             catch (Exception ex)
             {
-                Console.WriteLine(new { ErrorDetalle = ex.Message });
+                _logger.LogError(ex, "Error Interno del Servidor");
                 return StatusCode(500);
             }
         }
 
-        [HttpPatch("EditarPublicacion")]
+        [HttpPatch("Editar")]
         [Authorize]
 
-        public async Task<IActionResult> EditarPublicacion([FromQuery]int publicacionID,[FromBody] PublicacionModif publicacionEntrada) 
+        public async Task<IActionResult> Editar([FromQuery]int publicacionID,[FromBody] PublicacionModif publicacionEntrada) 
         {
             try
             {
@@ -127,7 +132,7 @@ namespace TuProyecto.Controllers
 
                 PublicacionSalida publicacion = await _publicacionServicios.ObtenerPublicacionPorID(publicacionID);
 
-                if (publicacion == null) return BadRequest(new { Mensaje = "Publicacion no encontrada" });
+                if (publicacion == null) return NotFound(new { Mensaje = "Publicacion no encontrada" });
                 
                 int usuarioID = await _metodosDeValidacion.ObtenerUsuarioIDToken();
 
@@ -135,21 +140,21 @@ namespace TuProyecto.Controllers
 
                 bool publicacionModif = await _publicacionServicios.EditarPublicacion(publicacionID, publicacionEntrada);
 
-                if(!publicacionModif) return NotFound(new { Mensaje = "Ah ocurrido un error al intentar editar la publicacion" });
+                if(!publicacionModif) return BadRequest(new { Mensaje = "Ah ocurrido un error al intentar editar la publicacion" });
 
                 return NoContent();
 
             }
             catch (Exception ex)
             {
-                Console.WriteLine(new { ErrorDetalle = ex.Message });
+                _logger.LogError(ex, "Error al editar la publicacion");
                 return StatusCode(500);
             }
         }
 
-        [HttpPatch("PausarPublicacion")]
+        [HttpPatch("Pausar")]
         [Authorize]
-        public async Task<IActionResult> PausarPublicacion([FromQuery] int publicacionID) 
+        public async Task<IActionResult> Pausar([FromQuery] int publicacionID) 
         {
             try
             {
@@ -159,64 +164,62 @@ namespace TuProyecto.Controllers
 
                 if (usuarioId != publicacion.Public_UsuarioID) return Forbid();
 
-                bool yaPausada = await _publicacionServicios.VerificarPublicPausada(publicacionID);
+                bool yaPausada = await _publicacionServicios.VerificarPublicEstado(publicacionID,4);
 
                 if (publicacion == null || yaPausada)
                 {
                     return NotFound(new { Mensaje = $"Publicacion con ID {publicacionID} no encontrada o ya esta pausada" });
                 }
 
-                bool resultado = await _publicacionServicios.PausarPublicacion(publicacionID, usuarioId);
+                bool resultado = await _publicacionServicios.CambiarEstadoPublicacion(publicacionID, 4);
                 
-                if (!resultado) return NotFound(new { Mensaje = "Ah ocurrido un error al intentar pausar la publicacion" });
+                if (!resultado) return BadRequest(new { Mensaje = "Ah ocurrido un error al intentar pausar la publicacion" });
 
                 return NoContent();
 
             }
             catch (Exception ex)
             {
-                Console.WriteLine(new { ErrorDetalle = ex.Message });
+                _logger.LogError(ex,"Error al Pausar la publicacion");
                 return StatusCode(500);
             }
         }
 
-        [HttpPatch("CancelarPublicacion")]
+        [HttpPatch("Cancelar")]
         [Authorize]
-        public async Task<IActionResult> CancelarPublicacion([FromQuery] int publicacionID)
+        public async Task<IActionResult> Cancelar([FromQuery] int publicacionID)
         {
             try
             {
                 PublicacionSalida publicacion = await _publicacionServicios.ObtenerPublicacionPorID(publicacionID);
-                
+
                 int usuarioId = await _metodosDeValidacion.ObtenerUsuarioIDToken();
 
-                int usuarioID = await _metodosDeValidacion.ObtenerUsuarioIDToken();
+                if (usuarioId != publicacion.Public_UsuarioID) return Forbid();
 
-                if (usuarioID != publicacion.Public_UsuarioID) return Forbid();
+                bool yaCancelada = await _publicacionServicios.VerificarPublicEstado(publicacionID, 5);
 
-                bool yaCancelada = await _publicacionServicios.VerificarPublicCancelada(publicacionID);
-                
                 if (publicacion == null || yaCancelada)
                 {
                     return NotFound(new { Mensaje = $"Publicacion con ID {publicacionID} no encontrada o ya esta cancelada" });
                 }
 
-                bool resultado = await _publicacionServicios.CancelarPublicacion(publicacionID,usuarioId);
+                bool resultado = await _publicacionServicios.CambiarEstadoPublicacion(publicacionID, 5);
 
-                if (!resultado) return NotFound(new { Mensaje = "Ah ocurrido un error al intentar cancelar la publicacion" });
+                if (!resultado) return BadRequest(new { Mensaje = "Ah ocurrido un error al intentar cancelar la publicacion" });
 
                 return NoContent();
             }
             catch (Exception ex)
             {
-                Console.WriteLine(new { ErrorDetalle = ex.Message });
+                _logger.LogError(ex, "Error al cancelar la publicacion");
                 return StatusCode(500);
             }
         }
 
-        [HttpPatch("ActivarPublicacion")]
+        [HttpPatch("Activar")]
         [Authorize]
-        public async Task<IActionResult> ActivarPublicacion([FromQuery] int publicacionID,[FromBody] PublicacionRelanzada nuevoStock )
+        public async Task<IActionResult> Activar([FromQuery] int publicacionID,[FromBody] PublicacionRelanzada nuevoStock )
         {
             try
             {
@@ -226,7 +229,7 @@ namespace TuProyecto.Controllers
 
                 if (usuarioID != publicacion.Public_UsuarioID) return Forbid();
 
-                bool yaActivada = await _publicacionServicios.VerificarPublicActivada(publicacionID);
+                bool yaActivada = await _publicacionServicios.VerificarPublicEstado(publicacionID,3);
 
                 if (publicacion == null || yaActivada)
                 {
@@ -235,14 +238,68 @@ namespace TuProyecto.Controllers
 
                 bool resultado = await _publicacionServicios.ActivarPublicacion(publicacionID, nuevoStock.Public_Stock);
                 
-                if (!resultado) return NotFound(new { Mensaje = "Ah ocurrido un error al intentar activar la publicacion"});
+                if (!resultado) return BadRequest(new { Mensaje = "Ah ocurrido un error al intentar activar la publicacion"});
 
                 return NoContent();
 
             }
             catch (Exception ex)
             {
-                Console.WriteLine(new { ErrorDetalle = ex.Message });
+                _logger.LogError(ex, "Error al activar la publicacion");
+                return StatusCode(500);
+            }
+        }
+
+        [HttpDelete("Eliminar")]
+        [Authorize]
+        public async Task<IActionResult> Eliminar([FromQuery] int publicacionID)
+        {
+            try
+            {
+                PublicacionSalida publicacion = await _publicacionServicios.ObtenerPublicacionPorID(publicacionID);
+
+                if (publicacion == null)
+                {
+                    return NotFound(new { Mensaje = $"Publicacion con ID: {publicacionID} no encontrada" });
+                }
+
+                int usuarioId = await _metodosDeValidacion.ObtenerUsuarioIDToken();
+
+                if (usuarioId != publicacion.Public_UsuarioID) return Forbid();
+
+                bool resultado = await _publicacionServicios.EliminarPublicacion(publicacionID);
+
+                if (!resultado) return BadRequest(new { Mensaje = "Ah ocurrido un error al intentar eliminar la publicacion" });
+
+                return NoContent();
+
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError(ex, "Error al eliminar la publicacion");
+                return StatusCode(500);
+            }
+        }
+
+        [HttpDelete("EliminarTodo")]
+        [Authorize]
+        public async Task<IActionResult> EliminarTodo()
+        {
+            try
+            {
+
+                int usuarioId = await _metodosDeValidacion.ObtenerUsuarioIDToken();
+
+                bool resultado = await _publicacionServicios.EliminarPublicaciones(usuarioId);
+
+                if (!resultado) return BadRequest(new { Mensaje = "Ah ocurrido un error al intentar eliminar las publicaciones" });
+
+                return NoContent();
+
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError(ex, "Error al eliminar la publicacion");
                 return StatusCode(500);
             }
         }

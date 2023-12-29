@@ -6,8 +6,9 @@ namespace Datos.Interfaces.IValidaciones
     {
         Task<string> HashContra(string pPassword);
         Task<bool> VerificarContra(string pUserInput, string pHashedPassword);
-        Task<UsuarioSalida> VerificarUsuario(string pEmail, string pPassword);
+        Task<bool> VerificarUsuario(string pEmail, string pContra);
         Task<int> ObtenerUsuarioIDToken();
+        Task<string> ObtenerUsuarioEstadoToken();
         Task<int> ObtenerUsuarioIDRefreshToken(string refreshToken);
         Task<string> ObtenerUsuarioRoleToken();
         Task<string> ObtenerRefreshToken(int pUsuario);

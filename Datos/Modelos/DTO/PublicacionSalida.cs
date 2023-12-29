@@ -11,9 +11,10 @@ namespace Datos.Modelos.DTO
         public decimal Public_Precio { get; set; }
         public string Public_Imagen { get; set; }
         public int Public_Stock { get; set; }
+        public string Public_Estado { get; set; }
         public PublicacionSalida() { }
 
-        public PublicacionSalida(int public_ID, int public_UsuarioID, string public_Nombre, string public_Descripcion, decimal public_Precio, string public_Imagen, int public_Stock)
+        public PublicacionSalida(int public_ID, int public_UsuarioID, string public_Nombre, string public_Descripcion, decimal public_Precio, string public_Imagen, int public_Stock, string public_Estado)
         {
             Public_ID = public_ID;
             Public_UsuarioID = public_UsuarioID;
@@ -22,6 +23,7 @@ namespace Datos.Modelos.DTO
             Public_Precio = public_Precio;
             Public_Imagen = public_Imagen;
             Public_Stock = public_Stock;
+            Public_Estado = public_Estado;
         }
     }
 
@@ -35,10 +37,5 @@ namespace Datos.Modelos.DTO
     {
         public DateTime Public_FModif { get; set; }
         public PublicacionSalidaM() { }
-    }
-
-    public class PublicacionSalidaE : PublicacionSalida
-    {
-        public int Public_Estado { get; set; }
     }
 }

@@ -12,19 +12,16 @@ namespace apiweb_ProyectoFinal.Controllers
     public class HistoriaController : Controller
     {
         private IMetodosDeValidacion _metodosDeValidacion;
-        private IPublicacionServicios _publicacionServicios;
         private IHistoriaServicios _historiaServicios;
         private readonly ILogger<HistoriaController> _logger;
-        public HistoriaController(ILogger<HistoriaController> logger, IHistoriaServicios historiaServicios, IMetodosDeValidacion metodosDeValidacion, IPublicacionServicios publicacionServicios)
+        public HistoriaController(ILogger<HistoriaController> logger, IHistoriaServicios historiaServicios, IMetodosDeValidacion metodosDeValidacion)
         {
             _logger = logger;
             _metodosDeValidacion = metodosDeValidacion;
-            _publicacionServicios = publicacionServicios;
             _historiaServicios = historiaServicios;
         }
 
         [HttpGet("ObtenerHistorial")]
-        [Authorize]
         public async Task<IActionResult> ObtenerHistorial()
         {
             try
@@ -36,7 +33,7 @@ namespace apiweb_ProyectoFinal.Controllers
             }
             catch (Exception ex)
             {
-                Console.WriteLine(new { ErrorDetalle = ex.Message });
+                _logger.LogError(ex,"Error al obtener el historial");
                 return StatusCode(500);
             }
         }

@@ -4,7 +4,6 @@ using Datos.Modelos;
 using Datos.Modelos.DTO;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
-using System.Net;
 
 namespace apiweb_ProyectoFinal.Controllers
 {
@@ -27,13 +26,14 @@ namespace apiweb_ProyectoFinal.Controllers
         public async Task<IActionResult> IniciarSesion([FromBody] UsuarioLogin usuario)
         {
             try
-            {
-                UsuarioSalida usuarioSalida = await _metodosDeValidacion.VerificarUsuario(usuario.Usuario_Email, usuario.Usuario_Contra);
+            {   
+                bool result = await _metodosDeValidacion.VerificarUsuario(usuario.Usuario_Email, usuario.Usuario_Contra);
 
-                if (usuarioSalida == null)
-                {
-                    return Unauthorized(new { Mensaje = "Email o contraseña no válidos." });
-                }
+                if (!result) return Unauthorized(new { Mensaje = "Email o contraseña no válidos." });
+
+                UsuarioSalida usuarioSalida = await _usuarioServicios.ObtenerUsuarioPorEmail(usuario.Usuario_Email);
+
+                if (usuarioSalida.Usuario_Estado == "Deshabilitado") return BadRequest(new {Mensaje = "Su usuario esta dado de baja"});
 
                 var token = _metodosDeValidacion.GenerarTokenAcceso(usuarioSalida);
 
@@ -44,7 +44,7 @@ namespace apiweb_ProyectoFinal.Controllers
             }
             catch (Exception ex)
             {
-                Console.WriteLine(new { ErrorDetalle = ex.Message });
+                _logger.LogError(ex, "Error al Iniciar Sesion");
                 return StatusCode(500);
             }
         }
@@ -65,7 +65,7 @@ namespace apiweb_ProyectoFinal.Controllers
             }
             catch (Exception ex)
             {
-                Console.WriteLine(new { ErrorDetalle = ex.Message });
+                _logger.LogError(ex, "Error al Cerrar Sesion");
                 return StatusCode(500);
             }
         }
@@ -106,7 +106,7 @@ namespace apiweb_ProyectoFinal.Controllers
             }
             catch (Exception ex)
             {
-                Console.WriteLine(new { ErrorDetalle = ex.Message });
+                _logger.LogError(ex, "Error al Refrescar el Token");
                 return BadRequest(new { Mensaje = "Se produjo un error al refrescar el token de acceso" });
             }
         }

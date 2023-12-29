@@ -2,7 +2,7 @@
 
 namespace Datos.Modelos.DTO
 {
-    public class Carrito
+    public class CarritoCreacion
     {
         public int Carrito_PID { get; set; }
         public int Carrito_ProdUnidades { get; set; }
