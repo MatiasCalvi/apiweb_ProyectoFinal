@@ -2,10 +2,8 @@
 using Datos.Interfaces.IValidaciones;
 using Datos.Modelos;
 using Datos.Modelos.DTO;
-using Datos.Servicios;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
-using System.Text.Json;
 
 namespace TuProyecto.Controllers
 {
@@ -166,14 +164,14 @@ namespace TuProyecto.Controllers
 
                 if (usuarioId != publicacion.Public_UsuarioID) return Forbid();
 
-                bool yaPausada = await _publicacionServicios.VerificarPublicPausada(publicacionID);
+                bool yaPausada = await _publicacionServicios.VerificarPublicEstado(publicacionID,4);
 
                 if (publicacion == null || yaPausada)
                 {
                     return NotFound(new { Mensaje = $"Publicacion con ID {publicacionID} no encontrada o ya esta pausada" });
                 }
 
-                bool resultado = await _publicacionServicios.PausarPublicacion(publicacionID, usuarioId);
+                bool resultado = await _publicacionServicios.CambiarEstadoPublicacion(publicacionID, 4);
                 
                 if (!resultado) return BadRequest(new { Mensaje = "Ah ocurrido un error al intentar pausar la publicacion" });
 
@@ -194,21 +192,19 @@ namespace TuProyecto.Controllers
             try
             {
                 PublicacionSalida publicacion = await _publicacionServicios.ObtenerPublicacionPorID(publicacionID);
-                
+
                 int usuarioId = await _metodosDeValidacion.ObtenerUsuarioIDToken();
 
-                int usuarioID = await _metodosDeValidacion.ObtenerUsuarioIDToken();
+                if (usuarioId != publicacion.Public_UsuarioID) return Forbid();
 
-                if (usuarioID != publicacion.Public_UsuarioID) return Forbid();
+                bool yaCancelada = await _publicacionServicios.VerificarPublicEstado(publicacionID, 5);
 
-                bool yaCancelada = await _publicacionServicios.VerificarPublicCancelada(publicacionID);
-                
                 if (publicacion == null || yaCancelada)
                 {
                     return NotFound(new { Mensaje = $"Publicacion con ID {publicacionID} no encontrada o ya esta cancelada" });
                 }
 
-                bool resultado = await _publicacionServicios.CancelarPublicacion(publicacionID,usuarioId);
+                bool resultado = await _publicacionServicios.CambiarEstadoPublicacion(publicacionID, 5);
 
                 if (!resultado) return BadRequest(new { Mensaje = "Ah ocurrido un error al intentar cancelar la publicacion" });
 
@@ -233,7 +229,7 @@ namespace TuProyecto.Controllers
 
                 if (usuarioID != publicacion.Public_UsuarioID) return Forbid();
 
-                bool yaActivada = await _publicacionServicios.VerificarPublicActivada(publicacionID);
+                bool yaActivada = await _publicacionServicios.VerificarPublicEstado(publicacionID,3);
 
                 if (publicacion == null || yaActivada)
                 {
@@ -285,7 +281,7 @@ namespace TuProyecto.Controllers
             }
         }
 
-        [HttpDelete("Eliminar")]
+        [HttpDelete("EliminarTodo")]
         [Authorize]
         public async Task<IActionResult> EliminarTodo()
         {

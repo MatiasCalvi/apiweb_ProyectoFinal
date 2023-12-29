@@ -11,6 +11,9 @@ namespace Datos.Interfaces.IDaos
         Task<bool> VerificarAutoria(int pUsuarioId, int pOfertaId);
         Task<OfertaSalida> CrearOferta(OfertaCreacion pOferta);
         Task<bool> EditarOferta(int pId, OfertaModif pOfertaModif);
+        Task<bool> VerificarOfertaEstado(int pOfertaID, int pEstadoID);
+        Task<bool> CambiarEstadoOferta(int pOfertaID, int pEstadoID);
+        Task<bool> DesasociarPublicaciones(int pOfertaID);
         Task<bool> EliminarOferta(int? pOfertaID, int? pUsuarioID);
     }
 }

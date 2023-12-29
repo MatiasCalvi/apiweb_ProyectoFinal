@@ -86,6 +86,25 @@ namespace Datos.Servicios
             return actualizado;
         }
 
+        public async Task<bool> VerificarOfertaEstado(int pOfertaID, int pEstadoID)
+        {
+            bool resultado = await _daoBDOfertas.VerificarOfertaEstado(pOfertaID, pEstadoID);
+
+            return resultado;
+        }
+
+        public async Task<bool> CambiarEstadoOferta(int pId, int pEstadoID)
+        {
+            bool resultado = await _daoBDOfertas.CambiarEstadoOferta(pId, pEstadoID);
+            return resultado;
+        }
+
+        public async Task<bool> DesasociarPublicaciones(int pId)
+        {
+            bool resultado = await _daoBDOfertas.DesasociarPublicaciones(pId);
+            return resultado;
+        }
+
         public async Task<bool> EliminarOferta(int pOfertaID)
         {
             bool resultado = await _daoBDOfertas.EliminarOferta(pOfertaID,null);
@@ -99,5 +118,7 @@ namespace Datos.Servicios
 
             return resultado;
         }
+
+
     }
 }

@@ -15,16 +15,8 @@ namespace Datos.Interfaces.IDaos
         Task<List<PublicacionSalida>> PublicacionesDeUnUsuario(int pUsuarioID);
         Task<PublicacionSalidaC> CrearPublicacion(PublicacionCreacion pPublicacion);
         Task<bool> EditarPublicacion(int pId, PublicacionModif pPublicacionModif);
+        Task<bool> CambiarEstadoPublicacion(int pPublicID, int pEstadoID);
+        Task<bool> VerificarPublicEstado(int pPublicID, int pEstadoID);
         Task<bool> EliminarPublicacion(int? pPublicacionID, int? pUsuarioID);
-        Task<bool> PausarPublicacion(int pId, int pUsuarioID);
-        Task<bool> CancelarPublicacion(int pId,int pUsuarioID);
-        Task<bool> ActivarPublicacion(int pId, int pUsuarioID);
-        Task<bool> PausarPublicacionAdmin(int pId);
-        Task<bool> CancelarPublicacionAdmin(int pId);
-        Task<bool> ActivarPublicacionAdmin(int pId);
-        Task<bool> VerificarPublicPausada(int pPublicId);
-        Task<bool> VerificarPublicCancelada(int pPublicId);
-        Task<bool> VerificarPublicActivada(int pPublicId);
-
     }
 }

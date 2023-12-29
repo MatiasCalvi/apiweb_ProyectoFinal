@@ -1,9 +1,6 @@
 ﻿using Datos.Interfaces.IServicios;
-using Datos.Interfaces.IValidaciones;
 using Datos.Modelos;
 using Datos.Modelos.DTO;
-using Datos.Servicios;
-using Datos.Validaciones;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 
@@ -17,14 +14,16 @@ namespace apiweb_ProyectoFinal.Controllers
         private IUsuarioServicios _usuarioServicios;
         private IAdminServicios _adminServicios;
         private IPublicacionServicios _publicacionServicios;
+        private IOfertasServicios _ofertasServicios;
 
         private readonly ILogger<AdminController> _logger;
-        public AdminController(ILogger<AdminController> logger, IUsuarioServicios usuarioServicios, IAdminServicios adminServicios, IPublicacionServicios publicacionServicios)
+        public AdminController(ILogger<AdminController> logger, IUsuarioServicios usuarioServicios, IAdminServicios adminServicios, IPublicacionServicios publicacionServicios, IOfertasServicios ofertasServicios)
         {
             _logger = logger;
             _usuarioServicios = usuarioServicios;
             _adminServicios = adminServicios;
             _publicacionServicios = publicacionServicios;
+            _ofertasServicios = ofertasServicios;
         }
 
         [HttpGet("ObtenerUsuarios")]
@@ -102,6 +101,22 @@ namespace apiweb_ProyectoFinal.Controllers
             catch (Exception ex)
             {
                 _logger.LogError(ex, "Error al obtener los historiales");
+                return StatusCode(500);
+            }
+        }
+
+        [HttpGet("ObtenerOfertas")]
+        public async Task<IActionResult> ObtenerOfertas()
+        {
+            try
+            {
+                List<OfertaSalida> ofertas = await _adminServicios.ObtenerOfertas();
+
+                return Ok(ofertas);
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError(ex, "Error Al obtener las ofertas");
                 return StatusCode(500);
             }
         }
@@ -234,14 +249,14 @@ namespace apiweb_ProyectoFinal.Controllers
             {
                 PublicacionSalida publicacion = await _publicacionServicios.ObtenerPublicacionPorID(publicacionID);
 
-                bool yaPausada = await _publicacionServicios.VerificarPublicPausada(publicacionID);
+                bool yaPausada = await _publicacionServicios.VerificarPublicEstado(publicacionID,4);
 
                 if (publicacion == null || yaPausada)
                 {
                     return NotFound(new { Mensaje = $"Publicacion con ID {publicacionID} no encontrada o ya esta pausada" });
                 }
 
-                bool resultado = await _publicacionServicios.PausarPublicacionAdmin(publicacionID);
+                bool resultado = await _publicacionServicios.CambiarEstadoPublicacion(publicacionID,4);
 
                 return NoContent();
 
@@ -260,14 +275,14 @@ namespace apiweb_ProyectoFinal.Controllers
             {
                 PublicacionSalida publicacion = await _publicacionServicios.ObtenerPublicacionPorID(publicacionID);
 
-                bool yaCancelada = await _publicacionServicios.VerificarPublicCancelada(publicacionID);
+                bool yaCancelada = await _publicacionServicios.VerificarPublicEstado(publicacionID,5);
 
                 if (publicacion == null || yaCancelada)
                 {
                     return NotFound(new { Mensaje = $"Publicacion con ID {publicacionID} no encontrada o ya esta cancelada" });
                 }
 
-                bool resultado = await _publicacionServicios.CancelarPublicacionAdmin(publicacionID);
+                bool resultado = await _publicacionServicios.CambiarEstadoPublicacion(publicacionID,5);
 
                 return NoContent();
             }
@@ -279,20 +294,20 @@ namespace apiweb_ProyectoFinal.Controllers
         }
 
         [HttpPatch("ActivarPublicacion")]
-        public async Task<IActionResult> ActivarPublicacion([FromQuery] int publicacionID)
+        public async Task<IActionResult> ActivarPublicacion([FromQuery] int publicacionID,[FromBody] PublicacionRelanzada nuevoStock)
         {
             try
             {
                 PublicacionSalida publicacion = await _publicacionServicios.ObtenerPublicacionPorID(publicacionID);
 
-                bool yaActivada = await _publicacionServicios.VerificarPublicActivada(publicacionID);
+                bool yaActivada = await _publicacionServicios.VerificarPublicEstado(publicacionID,3);
 
                 if (publicacion == null || yaActivada)
                 {
                     return NotFound(new { Mensaje = $"Publicacion con ID {publicacionID} no encontrada o ya se esta activada" });
                 }
 
-                bool resultado = await _publicacionServicios.ActivarPublicacionAdmin(publicacionID);
+                bool resultado = await _publicacionServicios.ActivarPublicacion(publicacionID, nuevoStock.Public_Stock);
 
                 return NoContent();
 
@@ -300,6 +315,211 @@ namespace apiweb_ProyectoFinal.Controllers
             catch (Exception ex)
             {
                 _logger.LogError(ex,$"Error al activar la publicacion: {publicacionID}");
+                return StatusCode(500);
+            }
+        }
+
+        [HttpPatch("EditarOferta")]
+        [Authorize]
+        public async Task<IActionResult> EditarOferta([FromQuery] int ofertaID, [FromBody] OfertaModif ofertaEntrada)
+        {
+            try
+            {
+                OfertaSalida oferta = await _ofertasServicios.ObtenerOfertaPorID(ofertaID);
+
+                if (oferta == null) return NotFound(new { Mensaje = "Oferta no encontrada" });
+
+                bool ofertaModif = await _adminServicios.EditarOfertaAdmin(ofertaID, ofertaEntrada);
+
+                if (!ofertaModif) return BadRequest(new { Mensaje = "Ah ocurrido un error al intentar editar la oferta" });
+
+                return NoContent();
+
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError(ex, "Error al editar la oferta");
+                return StatusCode(500);
+            }
+        }
+
+        [HttpPatch("PausarOferta")]
+        [Authorize]
+        public async Task<IActionResult> PausarOferta([FromQuery] int ofertaID)
+        {
+            try
+            {
+                OfertaSalida oferta = await _ofertasServicios.ObtenerOfertaPorID(ofertaID);
+
+                bool yaPausada = await _ofertasServicios.VerificarOfertaEstado(ofertaID, 4);
+
+                if (oferta == null || yaPausada)
+                {
+                    return NotFound(new { Mensaje = $"Oferta con ID: {ofertaID} no encontrada o ya esta pausada" });
+                }
+
+                bool resultado = await _ofertasServicios.CambiarEstadoOferta(ofertaID, 4);
+
+                if (!resultado) return BadRequest(new { Mensaje = "Ah ocurrido un error al intentar pausar la oferta" });
+
+                return NoContent();
+
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError(ex, "Error al Pausar la oferta");
+                return StatusCode(500);
+            }
+        }
+
+        [HttpPatch("CancelarOferta")]
+        [Authorize]
+        public async Task<IActionResult> CancelarOferta([FromQuery] int ofertaID)
+        {
+            try
+            {
+                OfertaSalida oferta = await _ofertasServicios.ObtenerOfertaPorID(ofertaID);
+
+                bool yaCancelada = await _ofertasServicios.VerificarOfertaEstado(ofertaID, 5);
+
+                if (oferta == null || yaCancelada)
+                {
+                    return NotFound(new { Mensaje = $"Oferta con ID: {ofertaID} no encontrada o ya esta cancelada" });
+                }
+
+                bool resultado = await _ofertasServicios.CambiarEstadoOferta(ofertaID, 5);
+
+                if (!resultado) return BadRequest(new { Mensaje = "Ah ocurrido un error al intentar cancelar la oferta" });
+
+                return NoContent();
+
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError(ex, "Error al cancelar la oferta");
+                return StatusCode(500);
+            }
+        }
+
+        [HttpPatch("ActivarOferta")]
+        [Authorize]
+        public async Task<IActionResult> ActivarOferta([FromQuery] int ofertaID)
+        {
+            try
+            {
+                OfertaSalida oferta = await _ofertasServicios.ObtenerOfertaPorID(ofertaID);
+
+                bool yaActivada = await _ofertasServicios.VerificarOfertaEstado(ofertaID, 3);
+
+                if (oferta == null || yaActivada)
+                {
+                    return NotFound(new { Mensaje = $"Oferta con ID: {ofertaID} no encontrada o ya esta activada" });
+                }
+
+                bool resultado = await _ofertasServicios.CambiarEstadoOferta(ofertaID, 3);
+
+                if (!resultado) return BadRequest(new { Mensaje = "Ah ocurrido un error al intentar activar la oferta" });
+
+                return NoContent();
+
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError(ex, "Error al Activar la oferta");
+                return StatusCode(500);
+            }
+        }
+
+        [HttpDelete("EliminarPublicacion")]
+        [Authorize]
+        public async Task<IActionResult> EliminarPublicacion([FromQuery] int publicacionID)
+        {
+            try
+            {
+                PublicacionSalida publicacion = await _publicacionServicios.ObtenerPublicacionPorID(publicacionID);
+
+                if (publicacion == null)
+                {
+                    return NotFound(new { Mensaje = $"Publicacion con ID: {publicacionID} no encontrada" });
+                }
+
+                bool resultado = await _publicacionServicios.EliminarPublicacion(publicacionID);
+
+                if (!resultado) return BadRequest(new { Mensaje = "Ah ocurrido un error al intentar eliminar la publicacion" });
+
+                return NoContent();
+
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError(ex, "Error al eliminar la publicacion");
+                return StatusCode(500);
+            }
+        }
+
+        [HttpDelete("EliminarPublicaciones")]
+        [Authorize]
+        public async Task<IActionResult> EliminarPublicaciones([FromBody]int usuarioID)
+        {
+            try
+            {
+                bool resultado = await _publicacionServicios.EliminarPublicaciones(usuarioID);
+
+                if (!resultado) return BadRequest(new { Mensaje = "Ah ocurrido un error al intentar eliminar las publicaciones" });
+
+                return NoContent();
+
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError(ex, "Error al eliminar la publicacion");
+                return StatusCode(500);
+            }
+        }
+
+        [HttpDelete("EliminarOferta")]
+        [Authorize]
+        public async Task<IActionResult> Eliminar([FromQuery] int ofertaID)
+        {
+            try
+            {
+                OfertaSalida oferta = await _ofertasServicios.ObtenerOfertaPorID(ofertaID);
+
+                if (oferta == null)
+                {
+                    return NotFound(new { Mensaje = $"Oferta con ID: {ofertaID} no encontrada" });
+                }
+
+                bool resultado = await _ofertasServicios.EliminarOferta(ofertaID);
+
+                if (!resultado) return BadRequest(new { Mensaje = "Ah ocurrido un error al intentar eliminar la oferta" });
+
+                return NoContent();
+
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError(ex, "Error al eliminar la oferta");
+                return StatusCode(500);
+            }
+        }
+
+        [HttpDelete("EliminarOfertas")]
+        [Authorize]
+        public async Task<IActionResult> EliminarTodo([FromBody]int usuarioID)
+        {
+            try
+            {
+                bool resultado = await _ofertasServicios.EliminarOfertas(usuarioID);
+
+                if (!resultado) return BadRequest(new { Mensaje = "Ah ocurrido un error al intentar eliminar las ofertas" });
+
+                return NoContent();
+
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError(ex, "Error al eliminar las ofertas");
                 return StatusCode(500);
             }
         }

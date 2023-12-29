@@ -54,8 +54,10 @@ namespace Datos
             using IDbConnection dbConnection = CreateConnection();
             dbConnection.Open();
 
-            return (await dbConnection.QueryAsync<PublicacionSalida>(_adminQuery.obtenerPublicacionesDeUnUsuarioQuery, 
-                                                                        new { Public_UsuarioID = pUsuarioID })).ToList();
+            return (await dbConnection.QueryAsync<PublicacionSalida>(
+                _adminQuery.obtenerPublicacionesDeUnUsuarioQuery, 
+                new { Public_UsuarioID = pUsuarioID 
+            })).ToList();
         }
 
         public async Task<List<CarritoSalida>> ObtenerCarritos()
@@ -89,6 +91,42 @@ namespace Datos
             return listaCarritoSalida; 
         }
 
+        public async Task<List<HistoriaCompraSalida>> ObtenerHistoriales()
+        {
+            using IDbConnection dbConnection = CreateConnection();
+            dbConnection.Open();
+            return (await dbConnection.QueryAsync<HistoriaCompraSalida>(_adminQuery.obtenerHistorialesQuery)).ToList();
+        }
+
+        public async Task<List<OfertaSalida>> ObtenerTodasLasOfertas()
+        {
+            using IDbConnection dbConnection = CreateConnection();
+            dbConnection.Open();
+
+            using var reader = await dbConnection.QueryMultipleAsync(_adminQuery.procesoAlmObt,
+                                                                        commandType: CommandType.StoredProcedure);
+
+            var ofertas = reader.Read<OfertaSalida, PublicacionSalida, OfertaSalida>(
+                (oferta, publicacion) =>
+                {
+                    if (oferta.Oferta_ProdOfer == null)
+                    {
+                        oferta.Oferta_ProdOfer = new List<PublicacionSalida>();
+                    }
+
+                    if (publicacion != null && !oferta.Oferta_ProdOfer.Any(p => p.Public_ID == publicacion.Public_ID))
+                    {
+                        oferta.Oferta_ProdOfer.Add(publicacion);
+                    }
+
+                    return oferta;
+                },
+                splitOn: "Public_ID"
+            ).ToList();
+
+            return ofertas.ToList();
+        }
+
         public async Task<bool> VerificarUsuarioHabilitado(int usuarioId)
         {
             try
@@ -112,8 +150,10 @@ namespace Datos
                 using IDbConnection dbConnection = CreateConnection();
                 dbConnection.Open();
 
-                return (await dbConnection.QueryFirstOrDefaultAsync<int>(_adminQuery.verificarUsuarioDeshabilitadoQuery, 
-                                                                            new { UsuarioId = usuarioId })) == 1;
+                return (await dbConnection.QueryFirstOrDefaultAsync<int>(
+                    _adminQuery.verificarUsuarioDeshabilitadoQuery, 
+                    new { UsuarioId = usuarioId 
+                })) == 1;
             }
             catch (Exception ex)
             {
@@ -127,8 +167,10 @@ namespace Datos
             {
                 using IDbConnection dbConnection = CreateConnection();
                 dbConnection.Open();
-                int filasAfectadas = await dbConnection.ExecuteAsync(_adminQuery.habilitarUsuarioQuery, 
-                                                                        new { Usuario_ID = pUsuarioId });
+                int filasAfectadas = await dbConnection.ExecuteAsync(
+                    _adminQuery.habilitarUsuarioQuery, 
+                    new { Usuario_ID = pUsuarioId 
+                });
 
                 return filasAfectadas > 0;
             }
@@ -144,8 +186,11 @@ namespace Datos
             {
                 using IDbConnection dbConnection = CreateConnection();
                 dbConnection.Open();
-                int filasAfectadas = await dbConnection.ExecuteAsync(_adminQuery.desactivarUsuarioQuery, 
-                                                                        new { Usuario_ID = pUsuarioId });
+
+                int filasAfectadas = await dbConnection.ExecuteAsync(
+                    _adminQuery.desactivarUsuarioQuery, 
+                    new { Usuario_ID = pUsuarioId 
+                });
 
                 return filasAfectadas > 0;
             }
@@ -160,8 +205,11 @@ namespace Datos
            
                 using IDbConnection dbConnection = CreateConnection();
                 dbConnection.Open();
-                int filasAfectadas = await dbConnection.ExecuteAsync(_adminQuery.asignarRolAAdminQuery, 
-                                                                        new { Usuario_ID = pUsuarioId });
+
+                int filasAfectadas = await dbConnection.ExecuteAsync(
+                    _adminQuery.asignarRolAAdminQuery, 
+                    new { Usuario_ID = pUsuarioId 
+                });
 
                 return filasAfectadas > 0;
             
@@ -174,8 +222,10 @@ namespace Datos
                 using IDbConnection dbConnection = CreateConnection();
                 dbConnection.Open();
 
-                int filasAfectadas = await dbConnection.ExecuteAsync(_adminQuery.asignarRolAUsuarioQuery, 
-                                                                        new { Usuario_ID = pUsuarioId });
+                int filasAfectadas = await dbConnection.ExecuteAsync(
+                    _adminQuery.asignarRolAUsuarioQuery, 
+                    new { Usuario_ID = pUsuarioId 
+                });
 
                 return filasAfectadas > 0;
             }
@@ -243,11 +293,28 @@ namespace Datos
 
         }
 
-        public async Task<List<HistoriaCompraSalida>> ObtenerHistoriales()
+        public async Task<bool> EditarOfertaAdmin(int pId, OfertaModif pOfertaModif)
         {
             using IDbConnection dbConnection = CreateConnection();
             dbConnection.Open();
-            return (await dbConnection.QueryAsync<HistoriaCompraSalida>(_adminQuery.obtenerHistorialesQuery)).ToList();
+
+            var parametros = new DynamicParameters();
+
+            parametros.Add("pOfertaNombre", pOfertaModif.Oferta_Nombre);
+            parametros.Add("pOfertaDescuento", pOfertaModif.Oferta_Descuento);
+            parametros.Add("pOfertaFInicio", pOfertaModif.Oferta_FInicio);
+            parametros.Add("pOfertaFFin", pOfertaModif.Oferta_FFin);
+            parametros.Add("pProductosIds", string.Join(",", pOfertaModif.Oferta_ProdOfer?.Where(x => x.HasValue).Select(x => x.Value.ToString()) ?? Enumerable.Empty<string>()));
+            parametros.Add("pOfertaID", pId);
+            parametros.Add("pOfertaFModif", pOfertaModif.Oferta_FModif);
+
+            int filasAfectadas = await dbConnection.ExecuteAsync(
+                _adminQuery.procesoAlmEdit,
+                parametros,
+                commandType: CommandType.StoredProcedure
+            );
+
+            return filasAfectadas > 0;
         }
     }
 }

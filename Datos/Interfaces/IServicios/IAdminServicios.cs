@@ -10,7 +10,9 @@ namespace Datos.Interfaces.IServicios
         Task<List<PublicacionSalida>> ObtenerPublicaciones();
         Task<List<PublicacionSalida>> PublicacionesDeUnUsuario(int pUsuarioID);
         Task<List<HistoriaCompraSalida>> ObtenerHistoriales();
+        Task<List<OfertaSalida>> ObtenerOfertas();
         Task<bool> EditarPublicacion(int pId, PublicacionModifA pPublicacionModif);
+        Task<bool> EditarOfertaAdmin(int pId, OfertaModif pOfertaModif);
         Task<bool> VerificarUsuarioHabilitado(int pId);
         Task<bool> VerificarUsuarioDeshabilitado(int pId);
         Task<bool> HabilitarUsuario(int pId);

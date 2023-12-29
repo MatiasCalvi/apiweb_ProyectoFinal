@@ -3,7 +3,6 @@ using Dapper;
 using Datos.Exceptions;
 using Datos.Interfaces.IDaos;
 using Datos.Interfaces.IQuerys;
-using Datos.Querys;
 using Microsoft.Extensions.Options;
 using MySql.Data.MySqlClient;
 using System.Data;
@@ -35,8 +34,9 @@ namespace Datos
                 {
                     dbConnection.Open();
 
-                    var refreshToken = await dbConnection.QueryFirstOrDefaultAsync<string>(_accesoQuerys.existeTokenQuery, 
-                                                                                           new { Usuario_ID = pUsuarioId }
+                    var refreshToken = await dbConnection.QueryFirstOrDefaultAsync<string>(
+                        _accesoQuerys.existeTokenQuery, 
+                        new { Usuario_ID = pUsuarioId }
                     );
 
                     return refreshToken;
@@ -44,7 +44,7 @@ namespace Datos
             }
             catch (Exception ex)
             {
-                throw new DatabaseQueryException("Error getting the refresh token from the database.", ex);
+                throw new DatabaseQueryException("Error al obtener el token de actualización de la base de datos.", ex);
             }
         }
 
@@ -55,20 +55,25 @@ namespace Datos
                 using IDbConnection dbConnection = CreateConnection();
                 dbConnection.Open();
 
-                var existingToken = await dbConnection.QueryFirstOrDefaultAsync<string>(_accesoQuerys.existeTokenQuery, 
-                                                                                        new { Usuario_ID = pUsuarioId });
+                var existingToken = await dbConnection.QueryFirstOrDefaultAsync<string>(
+                    _accesoQuerys.existeTokenQuery, 
+                    new { Usuario_ID = pUsuarioId });
 
                 if (existingToken != null)
                 {
-                    await dbConnection.ExecuteAsync(_accesoQuerys.actualizarTokenQuery,
-                                                    new { Usuario_ID = pUsuarioId, 
-                                                    RefreshToken = pRefreshToken });
+                    await dbConnection.ExecuteAsync(
+                        _accesoQuerys.actualizarTokenQuery,
+                        new { Usuario_ID = pUsuarioId, 
+                        RefreshToken = pRefreshToken 
+                    });
                 }
                 else
                 {
-                    await dbConnection.ExecuteAsync(_accesoQuerys.crearTokenQuery, 
-                                                    new { Usuario_ID = pUsuarioId, 
-                                                    RefreshToken = pRefreshToken });
+                    await dbConnection.ExecuteAsync(
+                        _accesoQuerys.crearTokenQuery, 
+                        new { Usuario_ID = pUsuarioId, 
+                        RefreshToken = pRefreshToken 
+                    });
                 }
             }
             catch (Exception ex)
@@ -83,8 +88,10 @@ namespace Datos
             {
                 using IDbConnection dbConnection = CreateConnection();
                 dbConnection.Open();
-                await dbConnection.ExecuteAsync(_accesoQuerys.eliminarTokenQuery, 
-                                                new { Usuario_ID = pUsuarioId });
+                await dbConnection.ExecuteAsync(
+                    _accesoQuerys.eliminarTokenQuery, 
+                    new { Usuario_ID = pUsuarioId 
+                });
             }
             catch (Exception ex)
             {

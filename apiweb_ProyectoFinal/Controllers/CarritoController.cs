@@ -1,10 +1,8 @@
 ﻿using Datos.Interfaces.IServicios;
 using Datos.Interfaces.IValidaciones;
 using Datos.Modelos.DTO;
-using Datos.Modelos;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
-using System.Net;
 
 namespace apiweb_ProyectoFinal.Controllers
 {

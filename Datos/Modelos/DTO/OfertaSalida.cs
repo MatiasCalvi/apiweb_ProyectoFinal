@@ -1,4 +1,5 @@
 ﻿using Datos.Interfaces.IModelos;
+using System.Text.Json.Serialization;
 
 namespace Datos.Modelos.DTO
 {

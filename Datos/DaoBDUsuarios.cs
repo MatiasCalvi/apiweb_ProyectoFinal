@@ -31,32 +31,36 @@ namespace Datos
         {
             using IDbConnection dbConnection = CreateConnection();
             dbConnection.Open();
-            return (await dbConnection.QueryAsync<UsuarioSalida>(_usuariosQuery.obtenerUsuarioIDQuery, 
-                                                                new { Usuario_ID = pId })).FirstOrDefault();
+            return (await dbConnection.QueryAsync<UsuarioSalida>(
+                _usuariosQuery.obtenerUsuarioIDQuery, 
+                new { Usuario_ID = pId })).FirstOrDefault();
         }
 
         public async Task<UsuarioModif?> ObtenerUsuarioPorIDU(int pId)
         {
             using IDbConnection dbConnection = CreateConnection();
             dbConnection.Open();
-            return (await dbConnection.QueryAsync<UsuarioModif>(_usuariosQuery.obtenerUsuarioIDQuery, 
-                                                                new { Usuario_ID = pId })).FirstOrDefault();
+            return (await dbConnection.QueryAsync<UsuarioModif>(
+                _usuariosQuery.obtenerUsuarioIDQuery, 
+                new { Usuario_ID = pId })).FirstOrDefault();
         }
 
         public async Task<UsuarioSalida> ObtenerUsuarioPorEmail(string pEmail)
         {   
             using IDbConnection dbConnection = CreateConnection();
             dbConnection.Open();
-            return await dbConnection.QueryFirstOrDefaultAsync<UsuarioSalida>(_usuariosQuery.obtenerUsuarioEmailQuery, 
-                                                                                new { Usuario_Email = pEmail });   
+            return await dbConnection.QueryFirstOrDefaultAsync<UsuarioSalida>(
+                _usuariosQuery.obtenerUsuarioEmailQuery, 
+                new { Usuario_Email = pEmail });   
         }
 
         public async Task<UsuarioModif> ObtenerUsuarioPorEmailU(string pEmail)
         {
             using IDbConnection dbConnection = CreateConnection();
             dbConnection.Open();
-            return await dbConnection.QueryFirstOrDefaultAsync<UsuarioModif>(_usuariosQuery.obtenerUsuarioEmailQuery, 
-                                                                              new { Usuario_Email = pEmail }); 
+            return await dbConnection.QueryFirstOrDefaultAsync<UsuarioModif>(
+                _usuariosQuery.obtenerUsuarioEmailQuery, 
+                new { Usuario_Email = pEmail }); 
         }
 
         public async Task<UsuarioSalidaC> CrearNuevoUsuario(UsuarioCreacion pUsuario)

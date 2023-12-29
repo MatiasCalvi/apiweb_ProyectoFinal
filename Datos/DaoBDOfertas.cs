@@ -5,7 +5,6 @@ using Datos.Interfaces.IDaos;
 using Datos.Interfaces.IQuerys;
 using Datos.Modelos;
 using Datos.Modelos.DTO;
-using Datos.Querys;
 using Microsoft.Extensions.Options;
 using MySql.Data.MySqlClient;
 using System.Data;
@@ -34,26 +33,30 @@ namespace Datos
             using IDbConnection dbConnection = CreateConnection();
             dbConnection.Open();
 
-            var result = await dbConnection.QueryAsync<OfertaSalida, PublicacionSalida, OfertaSalida>(
-                _ofertaQuerys.obtenerOfertasQuery,
-                map: (oferta, publicacion) =>
-                {
-                    oferta.Oferta_ProdOfer = new List<PublicacionSalida>();
-                    oferta.Oferta_ProdOfer.Add(publicacion);
-                    return oferta;
-                },
-                param: new { Oferta_Estado = 3 },
-                splitOn: "Public_ID"
+            using var reader = await dbConnection.QueryMultipleAsync(
+                _ofertaQuerys.procesoAlmObt, 
+                commandType: CommandType.StoredProcedure
             );
 
-            var ofertaSalida = result.GroupBy(o => o.Oferta_ID).Select(g =>
-            {
-                var oferta = g.First();
-                oferta.Oferta_ProdOfer = g.Select(o => o.Oferta_ProdOfer.First()).ToList();
-                return oferta;
-            }).ToList();
+            var ofertas = reader.Read<OfertaSalida, PublicacionSalida, OfertaSalida>(
+                (oferta, publicacion) =>
+                {
+                    if (oferta.Oferta_ProdOfer == null)
+                    {
+                        oferta.Oferta_ProdOfer = new List<PublicacionSalida>();
+                    }
 
-            return ofertaSalida;
+                    if (publicacion != null && !oferta.Oferta_ProdOfer.Any(p => p.Public_ID == publicacion.Public_ID))
+                    {
+                        oferta.Oferta_ProdOfer.Add(publicacion);
+                    }
+
+                    return oferta;
+                },
+                splitOn: "Public_ID"
+            ).ToList();
+
+            return ofertas.ToList();
         }
 
         public async Task<OfertaSalida> ObtenerOfertaPorID(int pId)
@@ -65,20 +68,32 @@ namespace Datos
                 _ofertaQuerys.obtenerOfertaQuery,
                 map: (oferta, publicacion) =>
                 {
-                    oferta.Oferta_ProdOfer = new List<PublicacionSalida>();
-                    oferta.Oferta_ProdOfer.Add(publicacion);
+                    if (oferta.Oferta_ProdOfer == null)
+                    {
+                        oferta.Oferta_ProdOfer = new List<PublicacionSalida>();
+                    }
+
+                    if (publicacion != null) 
+                    {
+                        oferta.Oferta_ProdOfer.Add(publicacion);
+                    }
+
                     return oferta;
                 },
                 param: new { Oferta_ID = pId },
                 splitOn: "Public_ID"
             );
 
-            var ofertaSalida = result.GroupBy(o => o.Oferta_ID).Select(g =>
+            var ofertaSalida = result.FirstOrDefault();
+
+            if (ofertaSalida == null)
             {
-                var oferta = g.First();
-                oferta.Oferta_ProdOfer = g.Select(o => o.Oferta_ProdOfer.First()).ToList();
-                return oferta;
-            }).FirstOrDefault();
+                return new OfertaSalida
+                {
+                    Oferta_ID = pId,
+                    Oferta_ProdOfer = new List<PublicacionSalida>()
+                };
+            }
 
             return ofertaSalida;
         }
@@ -88,9 +103,11 @@ namespace Datos
             using IDbConnection dbConnection = CreateConnection();
             dbConnection.Open();
 
-            int count = await dbConnection.ExecuteScalarAsync<int>(_ofertaQuerys.verificarCreador, 
-                                                                       new { Public_UsuarioID = usuarioId, 
-                                                                       Public_ID = ofertaID });
+            int count = await dbConnection.ExecuteScalarAsync<int>(
+                _ofertaQuerys.verificarCreador, 
+                new { Public_UsuarioID = usuarioId, 
+                Public_ID = ofertaID 
+            });
 
             return count == 1;
         }
@@ -102,14 +119,15 @@ namespace Datos
             dbConnection.Open();
 
             var result = await dbConnection.QueryAsync<OfertaSalida, PublicacionSalida, OfertaSalida>(
-                _ofertaQuerys.obtenerfertasPorUsuarioIDQuery,
+                _ofertaQuerys.traerOfertasPorUsuarioID,
                 map: (oferta, publicacion) =>
                 {
                     oferta.Oferta_ProdOfer = new List<PublicacionSalida>();
                     oferta.Oferta_ProdOfer.Add(publicacion);
                     return oferta;
                 },
-                param: new { Oferta_UsuarioID = pId },
+                param: new { UsuarioID = pId },
+                commandType: CommandType.StoredProcedure,
                 splitOn: "Public_ID"
             );
 
@@ -140,9 +158,10 @@ namespace Datos
                 parameters.Add("@Oferta_ID", dbType: DbType.Int32, direction: ParameterDirection.Output);
                 parameters.Add("pProductosIds", string.Join(",", pOferta.Oferta_ProdOfer), DbType.String);
 
-                OfertaSalida ofertaSalida = await dbConnection.QueryFirstOrDefaultAsync<OfertaSalida>(_ofertaQuerys.procesoAlmCrear,
-                                                                                                        parameters, 
-                                                                                                        commandType: CommandType.StoredProcedure);
+                OfertaSalida ofertaSalida = await dbConnection.QueryFirstOrDefaultAsync<OfertaSalida>(
+                    _ofertaQuerys.procesoAlmCrear,
+                    parameters, 
+                    commandType: CommandType.StoredProcedure);
 
                 return ofertaSalida;
             }
@@ -176,6 +195,49 @@ namespace Datos
             return filasAfectadas > 0;
         }
 
+        public async Task<bool> VerificarOfertaEstado(int pOfertaID, int pEstadoID)
+        {
+            using IDbConnection dbConnection = CreateConnection();
+            dbConnection.Open();
+
+            var resultado = await dbConnection.QueryFirstOrDefaultAsync<int>(
+                _ofertaQuerys.procesoAlmVEstado,
+                new { 
+                        OfertaID = pOfertaID, 
+                        EstadoID = pEstadoID 
+                },
+                commandType: CommandType.StoredProcedure
+            );
+
+            return resultado == 1;
+        }
+
+        public async Task<bool> CambiarEstadoOferta(int pOfertaID, int pEstadoID)
+        {
+            using IDbConnection dbConnection = CreateConnection();
+            dbConnection.Open();
+
+            int filasAfectadas = await dbConnection.ExecuteAsync(
+                _ofertaQuerys.procesoAlmEstado,
+                new { OfertaID = pOfertaID, EstadoID = pEstadoID}
+            );
+
+            return filasAfectadas > 0;
+        }
+
+        public async Task<bool> DesasociarPublicaciones(int pOfertaID)
+        {
+            using IDbConnection dbConnection = CreateConnection();
+            dbConnection.Open();
+
+            int filasAfectadas = await dbConnection.ExecuteAsync(
+                _ofertaQuerys.DesasociarPublicaciones,
+                new { OfertaID = pOfertaID }
+            );
+
+            return filasAfectadas > 0;
+        }
+
         public async Task<bool> EliminarOferta(int? pOfertaID, int? pUsuarioID)
         {
             try
@@ -183,7 +245,8 @@ namespace Datos
                 using IDbConnection dbConnection = CreateConnection();
                 dbConnection.Open();
 
-                bool filas = await dbConnection.ExecuteScalarAsync<bool>(_ofertaQuerys.procesoAlmElim,
+                bool filas = await dbConnection.ExecuteScalarAsync<bool>(
+                    _ofertaQuerys.procesoAlmElim,
                     new { OfertaID = pOfertaID, UsuarioID = pUsuarioID },
                     commandType: CommandType.StoredProcedure);
 
@@ -194,7 +257,6 @@ namespace Datos
                 throw new DatabaseTransactionException($"Error al eliminar la oferta y sus publicaciones: {ex.Message}");
             }
         }
-
     }
 }
 

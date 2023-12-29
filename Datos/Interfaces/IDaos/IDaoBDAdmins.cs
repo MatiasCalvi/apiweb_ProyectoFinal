@@ -11,6 +11,7 @@ namespace Datos.Interfaces.IDaos
         Task<List<PublicacionSalida>> PublicacionesDeUnUsuario(int pUsuarioID);
         Task<List<CarritoSalida>> ObtenerCarritos();
         Task<List<HistoriaCompraSalida>> ObtenerHistoriales();
+        Task<List<OfertaSalida>> ObtenerTodasLasOfertas();
         Task<bool> VerificarUsuarioDeshabilitado(int usuarioId);
         Task<bool> VerificarUsuarioHabilitado(int usuarioId);
         Task<bool> HabilitarUsuario(int pUsuarioId);
@@ -18,5 +19,6 @@ namespace Datos.Interfaces.IDaos
         Task<bool> AsignarRolAAdmin(int pUsuarioId);
         Task<bool> AsignarRolAUsuario(int usuarioId);
         Task<bool> EditarPublicacion(int pId, PublicacionModifA pPublicacionModif);
+        Task<bool> EditarOfertaAdmin(int pId, OfertaModif pOfertaModif);
     }
 }

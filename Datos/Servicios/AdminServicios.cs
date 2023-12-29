@@ -43,6 +43,11 @@ namespace Datos.Servicios
             return await _daoBDAdmins.ObtenerHistoriales();
         }
 
+        public async Task<List<OfertaSalida>> ObtenerOfertas()
+        {
+            return await _daoBDAdmins.ObtenerTodasLasOfertas();
+        }
+
         public async Task<bool> VerificarUsuarioHabilitado(int pId)
         {
             bool resultado = await _daoBDAdmins.VerificarUsuarioHabilitado(pId);
@@ -129,6 +134,16 @@ namespace Datos.Servicios
             };
 
             bool actualizado = await _daoBDAdmins.EditarPublicacion(pId, publicacion);
+
+            return actualizado;
+        }
+
+        public async Task<bool> EditarOfertaAdmin(int pId, OfertaModif pOfertaModif)
+        {
+            DateTime fechaActual = DateTime.Now;
+            pOfertaModif.Oferta_FModif = fechaActual;
+
+            bool actualizado = await _daoBDAdmins.EditarOfertaAdmin(pId, pOfertaModif);
 
             return actualizado;
         }

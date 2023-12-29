@@ -4,7 +4,6 @@ using Datos.Modelos.DTO;
 using Datos.Modelos;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Authorization;
-using Datos.Servicios;
 
 namespace apiweb_ProyectoFinal.Controllers
 {
@@ -34,7 +33,7 @@ namespace apiweb_ProyectoFinal.Controllers
             }
             catch (Exception ex)
             {
-                _logger.LogError(ex, "Error Al obtener la oferta");
+                _logger.LogError(ex, "Error Al obtener las ofertas");
                 return StatusCode(500);
             }
         }
@@ -58,6 +57,7 @@ namespace apiweb_ProyectoFinal.Controllers
         }
 
         [HttpGet("TusOfertas")]
+        [Authorize]
         public async Task<IActionResult> TusOfertas()
         {
             try
@@ -98,7 +98,6 @@ namespace apiweb_ProyectoFinal.Controllers
 
         [HttpPatch("Editar")]
         [Authorize]
-
         public async Task<IActionResult> Editar([FromQuery] int ofertaID, [FromBody] OfertaModif ofertaEntrada)
         {
             try
@@ -123,6 +122,136 @@ namespace apiweb_ProyectoFinal.Controllers
             catch (Exception ex)
             {
                 _logger.LogError(ex, "Error al editar la oferta");
+                return StatusCode(500);
+            }
+        }
+
+        [HttpPatch("QuitarProductos")]
+        [Authorize]
+        public async Task<IActionResult> QuitarProductos([FromQuery] int ofertaID)
+        {
+            try
+            {
+                OfertaSalida oferta = await _ofertasServicios.ObtenerOfertaPorID(ofertaID);
+
+                if (oferta == null)
+                {
+                    return NotFound(new { Mensaje = $"Oferta con ID: {ofertaID} no encontrada" });
+                }
+
+                int usuarioId = await _metodosDeValidacion.ObtenerUsuarioIDToken();
+
+                if (usuarioId != oferta.Oferta_UsuarioID) return Forbid();
+
+                bool resultado = await _ofertasServicios.DesasociarPublicaciones(ofertaID);
+
+                if (!resultado) return BadRequest();
+
+                return NoContent();
+
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError(ex, "Error al eliminar la oferta");
+                return StatusCode(500);
+            }
+        }
+
+        [HttpPatch("Pausar")]
+        [Authorize]
+        public async Task<IActionResult> Pausar([FromQuery] int ofertaID)
+        {
+            try
+            {
+                OfertaSalida oferta = await _ofertasServicios.ObtenerOfertaPorID(ofertaID);
+
+                int usuarioId = await _metodosDeValidacion.ObtenerUsuarioIDToken();
+
+                if (usuarioId != oferta.Oferta_UsuarioID) return Forbid();
+
+                bool yaPausada = await _ofertasServicios.VerificarOfertaEstado(ofertaID, 4);
+
+                if (oferta == null || yaPausada)
+                {
+                    return NotFound(new { Mensaje = $"Oferta con ID: {ofertaID} no encontrada o ya esta pausada" });
+                }
+
+                bool resultado = await _ofertasServicios.CambiarEstadoOferta(ofertaID, 4);
+
+                if (!resultado) return BadRequest(new { Mensaje = "Ah ocurrido un error al intentar pausar la oferta" });
+
+                return NoContent();
+
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError(ex, "Error al Pausar la oferta");
+                return StatusCode(500);
+            }
+        }
+
+        [HttpPatch("Cancelar")]
+        [Authorize]
+        public async Task<IActionResult> Cancelar([FromQuery] int ofertaID)
+        {
+            try
+            {
+                OfertaSalida oferta = await _ofertasServicios.ObtenerOfertaPorID(ofertaID);
+
+                int usuarioId = await _metodosDeValidacion.ObtenerUsuarioIDToken();
+
+                if (usuarioId != oferta.Oferta_UsuarioID) return Forbid();
+
+                bool yaCancelada = await _ofertasServicios.VerificarOfertaEstado(ofertaID, 5);
+
+                if (oferta == null || yaCancelada)
+                {
+                    return NotFound(new { Mensaje = $"Oferta con ID: {ofertaID} no encontrada o ya esta cancelada" });
+                }
+
+                bool resultado = await _ofertasServicios.CambiarEstadoOferta(ofertaID, 5);
+
+                if (!resultado) return BadRequest(new { Mensaje = "Ah ocurrido un error al intentar cancelar la oferta" });
+
+                return NoContent();
+
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError(ex, "Error al cancelar la oferta");
+                return StatusCode(500);
+            }
+        }
+
+        [HttpPatch("Activar")]
+        [Authorize]
+        public async Task<IActionResult> Activar([FromQuery] int ofertaID)
+        {
+            try
+            {
+                OfertaSalida oferta = await _ofertasServicios.ObtenerOfertaPorID(ofertaID);
+
+                int usuarioId = await _metodosDeValidacion.ObtenerUsuarioIDToken();
+
+                if (usuarioId != oferta.Oferta_UsuarioID) return Forbid();
+
+                bool yaActivada = await _ofertasServicios.VerificarOfertaEstado(ofertaID, 3);
+
+                if (oferta == null || yaActivada)
+                {
+                    return NotFound(new { Mensaje = $"Oferta con ID: {ofertaID} no encontrada o ya esta activada" });
+                }
+
+                bool resultado = await _ofertasServicios.CambiarEstadoOferta(ofertaID, 3);
+
+                if (!resultado) return BadRequest(new { Mensaje = "Ah ocurrido un error al intentar activar la oferta" });
+
+                return NoContent();
+
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError(ex, "Error al Activar la oferta");
                 return StatusCode(500);
             }
         }
@@ -175,107 +304,9 @@ namespace apiweb_ProyectoFinal.Controllers
             }
             catch (Exception ex)
             {
-                _logger.LogError(ex, "Error al eliminar la oferta");
+                _logger.LogError(ex, "Error al eliminar las ofertas");
                 return StatusCode(500);
             }
         }
-
-        //[HttpPatch("PausarOferta")]
-        //[Authorize]
-        //public async Task<IActionResult> PausarOferta([FromQuery] int ofertaID)
-        //{
-        //    try
-        //    {
-        //        OfertaSalida oferta = await _ofertasServicios.ObtenerOfertaPorID(ofertaID);
-
-        //        int usuarioId = await _metodosDeValidacion.ObtenerUsuarioIDToken();
-
-        //        if (usuarioId != oferta.Oferta_UsuarioID) return Forbid();
-
-        //        bool yaPausada = await _ofertasServicios.VerificarOfertaEstado(ofertaID, 4);
-
-        //        if (oferta == null || yaPausada)
-        //        {
-        //            return NotFound(new { Mensaje = $"Oferta con ID: {ofertaID} no encontrada o ya esta pausada" });
-        //        }
-
-        //        bool resultado = await _ofertasServicios.OfertaEstado(ofertaID, usuarioId,4);
-
-        //        if (!resultado) return BadRequest(new { Mensaje = "Ah ocurrido un error al intentar pausar la oferta" });
-
-        //        return NoContent();
-
-        //    }
-        //    catch (Exception ex)
-        //    {
-        //        _logger.LogError(ex, "Error al Pausar la oferta");
-        //        return StatusCode(500);
-        //    }
-        //}
-
-        //[HttpPatch("CancelarOferta")]
-        //[Authorize]
-        //public async Task<IActionResult> CancelarOferta([FromQuery] int ofertaID)
-        //{
-        //    try
-        //    {
-        //        OfertaSalida oferta = await _ofertasServicios.ObtenerOfertaPorID(ofertaID);
-
-        //        int usuarioId = await _metodosDeValidacion.ObtenerUsuarioIDToken();
-
-        //        if (usuarioId != oferta.Oferta_UsuarioID) return Forbid();
-
-        //        bool yaCancelada = await _ofertasServicios.VerificarOfertaEstado(ofertaID, 5);
-
-        //        if (oferta == null || yaCancelada)
-        //        {
-        //            return NotFound(new { Mensaje = $"Oferta con ID: {ofertaID} no encontrada o ya esta cancelada" });
-        //        }
-
-        //        bool resultado = await _ofertasServicios.OfertaEstado(ofertaID, usuarioId, 5);
-
-        //        if (!resultado) return BadRequest(new { Mensaje = "Ah ocurrido un error al intentar cancelar la oferta" });
-
-        //        return NoContent();
-        //    }
-        //    catch (Exception ex)
-        //    {
-        //        _logger.LogError(ex, "Error al cancelar la oferta");
-        //        return StatusCode(500);
-        //    }
-        //}
-
-        //[HttpPatch("ActivarOferta")]
-        //[Authorize]
-        //public async Task<IActionResult> ActivarOferta([FromQuery] int ofertaID)
-        //{
-        //    try
-        //    {
-        //        OfertaSalida oferta = await _ofertasServicios.ObtenerOfertaPorID(ofertaID);
-
-        //        int usuarioId = await _metodosDeValidacion.ObtenerUsuarioIDToken();
-
-        //        if (usuarioId != oferta.Oferta_UsuarioID) return Forbid();
-
-        //        bool yaCancelada = await _ofertasServicios.VerificarOfertaEstado(ofertaID, 3);
-
-        //        if (oferta == null || yaCancelada)
-        //        {
-        //            return NotFound(new { Mensaje = $"Oferta con ID: {ofertaID} no encontrada o ya esta cancelada" });
-        //        }
-
-        //        bool resultado = await _ofertasServicios.OfertaEstado(ofertaID, usuarioId, 3);
-
-        //        if (!resultado) return BadRequest(new { Mensaje = "Ah ocurrido un error al intentar cancelar la oferta" });
-
-        //        return NoContent();
-
-        //    }
-        //    catch (Exception ex)
-        //    {
-        //        _logger.LogError(ex, "Error al activar la publicacion");
-        //        return StatusCode(500);
-        //    }
-        //}
     }
 }

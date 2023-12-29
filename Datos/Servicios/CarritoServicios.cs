@@ -88,7 +88,7 @@ namespace Datos.Servicios
             if (publicacion.Public_Stock == 0)
             {
                 publicacionFinal.Public_Estado = 4;
-                await _publicacionServicios.PausarPublicacion(publicacionID, publicacion.Public_UsuarioID);
+                await _publicacionServicios.CambiarEstadoPublicacion(publicacionID,4);
                                                                                                                     //optimizar esto
                 await _publicacionServicios.EditarPublicacion(publicacionID, publicacionFinal);
 
