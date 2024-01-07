@@ -1,6 +1,5 @@
 ﻿using Datos.Interfaces.IModelos;
 using System.ComponentModel.DataAnnotations;
-using System.Diagnostics.CodeAnalysis;
 using System.Text.Json.Serialization;
 
 namespace Datos.Modelos
@@ -8,7 +7,7 @@ namespace Datos.Modelos
     public class PublicacionCreacion : IPublicacion
     {
         [JsonIgnore]
-        public int Public_UsuarioID {  get; set; }
+        public int Public_UsuarioID { get; set; }
 
         [Required(ErrorMessage = "El nombre es obligatorio.")]
         [StringLength(100, MinimumLength = 3, ErrorMessage = "El nombre debe tener entre 3 y 100 caracteres.")]

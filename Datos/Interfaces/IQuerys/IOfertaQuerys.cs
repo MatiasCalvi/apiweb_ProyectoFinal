@@ -12,9 +12,11 @@
         public string procesoAlmCrear { get; }
         public string procesoAlmEdit { get; }
         public string procesoAlmElim { get; }
+        public string procesoAlmCan { get; }
         public string procesoAlmVEstado { get; }
         public string procesoAlmEstado { get; }
-        public string DesasociarPublicaciones { get; }
+        public string procesoVDescuento { get; }
+        public string desasociarPublicaciones { get; }
 
     }
 }

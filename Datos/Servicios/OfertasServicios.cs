@@ -20,8 +20,9 @@ namespace Datos.Servicios
         }
 
         public async Task<List<OfertaSalida>> ObtenerOfertas()
-        {
-            return await _daoBDOfertas.ObtenerOfertas();
+        {   
+            DateTime fechaActual = DateTime.Now;
+            return await _daoBDOfertas.ObtenerOfertas(fechaActual);
         }
 
         public async Task<OfertaSalida> ObtenerOfertaPorID(int pId)
@@ -47,6 +48,12 @@ namespace Datos.Servicios
             }
 
             return true; 
+        }
+
+        public async Task<int> VerificarDescuento(int pPublicID)
+        {
+            int descuento = await _daoBDOfertas.VerificarDescuento(pPublicID);
+            return descuento;
         }
 
         public async Task<OfertaSalidaC> CrearOferta(OfertaCreacion oferta)
@@ -86,25 +93,22 @@ namespace Datos.Servicios
             return actualizado;
         }
 
-        public async Task<bool> VerificarOfertaEstado(int pOfertaID, int pEstadoID)
-        {
-            bool resultado = await _daoBDOfertas.VerificarOfertaEstado(pOfertaID, pEstadoID);
-
-            return resultado;
-        }
-
-        public async Task<bool> CambiarEstadoOferta(int pId, int pEstadoID)
-        {
-            bool resultado = await _daoBDOfertas.CambiarEstadoOferta(pId, pEstadoID);
-            return resultado;
-        }
-
         public async Task<bool> DesasociarPublicaciones(int pId)
         {
             bool resultado = await _daoBDOfertas.DesasociarPublicaciones(pId);
             return resultado;
         }
+        public async Task<bool> OfertaCancelar(int pUsuarioID, int pOfertaID)
+        {
+            DateTime fecha = DateTime.Now;
+            return await _daoBDOfertas.OfertaCancelar(pUsuarioID, pOfertaID, fecha);
+        }
 
+        public async Task<bool> OfertasCancelar(int pUsuarioID)
+        {
+            DateTime fecha = DateTime.Now;
+            return await _daoBDOfertas.OfertaCancelar(pUsuarioID, null, fecha);
+        }
         public async Task<bool> EliminarOferta(int pOfertaID)
         {
             bool resultado = await _daoBDOfertas.EliminarOferta(pOfertaID,null);

@@ -157,59 +157,14 @@ namespace apiweb_ProyectoFinal.Controllers
             }
         }
 
-        [HttpPatch("Pausar")]
+        [HttpPatch("CancelarOferta")]
         [Authorize]
-        public async Task<IActionResult> Pausar([FromQuery] int ofertaID)
+        public async Task<IActionResult> CancelarOferta([FromBody] int ofertaID)
         {
             try
             {
-                OfertaSalida oferta = await _ofertasServicios.ObtenerOfertaPorID(ofertaID);
-
-                int usuarioId = await _metodosDeValidacion.ObtenerUsuarioIDToken();
-
-                if (usuarioId != oferta.Oferta_UsuarioID) return Forbid();
-
-                bool yaPausada = await _ofertasServicios.VerificarOfertaEstado(ofertaID, 4);
-
-                if (oferta == null || yaPausada)
-                {
-                    return NotFound(new { Mensaje = $"Oferta con ID: {ofertaID} no encontrada o ya esta pausada" });
-                }
-
-                bool resultado = await _ofertasServicios.CambiarEstadoOferta(ofertaID, 4);
-
-                if (!resultado) return BadRequest(new { Mensaje = "Ah ocurrido un error al intentar pausar la oferta" });
-
-                return NoContent();
-
-            }
-            catch (Exception ex)
-            {
-                _logger.LogError(ex, "Error al Pausar la oferta");
-                return StatusCode(500);
-            }
-        }
-
-        [HttpPatch("Cancelar")]
-        [Authorize]
-        public async Task<IActionResult> Cancelar([FromQuery] int ofertaID)
-        {
-            try
-            {
-                OfertaSalida oferta = await _ofertasServicios.ObtenerOfertaPorID(ofertaID);
-
-                int usuarioId = await _metodosDeValidacion.ObtenerUsuarioIDToken();
-
-                if (usuarioId != oferta.Oferta_UsuarioID) return Forbid();
-
-                bool yaCancelada = await _ofertasServicios.VerificarOfertaEstado(ofertaID, 5);
-
-                if (oferta == null || yaCancelada)
-                {
-                    return NotFound(new { Mensaje = $"Oferta con ID: {ofertaID} no encontrada o ya esta cancelada" });
-                }
-
-                bool resultado = await _ofertasServicios.CambiarEstadoOferta(ofertaID, 5);
+                int usuarioID = await _metodosDeValidacion.ObtenerUsuarioIDToken();
+                bool resultado = await _ofertasServicios.OfertaCancelar(usuarioID, ofertaID);
 
                 if (!resultado) return BadRequest(new { Mensaje = "Ah ocurrido un error al intentar cancelar la oferta" });
 
@@ -223,35 +178,23 @@ namespace apiweb_ProyectoFinal.Controllers
             }
         }
 
-        [HttpPatch("Activar")]
+        [HttpPatch("CancelarOfertas")]
         [Authorize]
-        public async Task<IActionResult> Activar([FromQuery] int ofertaID)
+        public async Task<IActionResult> CancelarOfertas()
         {
             try
             {
-                OfertaSalida oferta = await _ofertasServicios.ObtenerOfertaPorID(ofertaID);
+                int usuarioID = await _metodosDeValidacion.ObtenerUsuarioIDToken();
+                bool resultado = await _ofertasServicios.OfertasCancelar(usuarioID);
 
-                int usuarioId = await _metodosDeValidacion.ObtenerUsuarioIDToken();
-
-                if (usuarioId != oferta.Oferta_UsuarioID) return Forbid();
-
-                bool yaActivada = await _ofertasServicios.VerificarOfertaEstado(ofertaID, 3);
-
-                if (oferta == null || yaActivada)
-                {
-                    return NotFound(new { Mensaje = $"Oferta con ID: {ofertaID} no encontrada o ya esta activada" });
-                }
-
-                bool resultado = await _ofertasServicios.CambiarEstadoOferta(ofertaID, 3);
-
-                if (!resultado) return BadRequest(new { Mensaje = "Ah ocurrido un error al intentar activar la oferta" });
+                if (!resultado) return BadRequest(new { Mensaje = "Ah ocurrido un error al intentar cancelar las ofertas" });
 
                 return NoContent();
 
             }
             catch (Exception ex)
             {
-                _logger.LogError(ex, "Error al Activar la oferta");
+                _logger.LogError(ex, "Error al cancelar las ofertas");
                 return StatusCode(500);
             }
         }
