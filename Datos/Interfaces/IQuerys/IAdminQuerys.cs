@@ -15,5 +15,6 @@
         public string asignarRolAAdminQuery { get; }
         public string asignarRolAUsuarioQuery { get; }
         public string procesoAlmEdit { get; }
+        public string procesoAlmCan { get; }
     }
 }

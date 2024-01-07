@@ -13,6 +13,7 @@ namespace Datos.Interfaces.IDaos
         Task<bool> EditarOferta(int pId, OfertaModif pOfertaModif);
         Task<bool> DesasociarPublicaciones(int pOfertaID);
         Task<bool> EliminarOferta(int? pOfertaID, int? pUsuarioID);
+        Task<bool> OfertaCancelar(int pUsuarioID, int? pOfertaID, DateTime pFecha);
         Task<int> VerificarDescuento(int pPublicID);
     }
 }

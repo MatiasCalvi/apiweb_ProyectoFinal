@@ -320,7 +320,6 @@ namespace apiweb_ProyectoFinal.Controllers
         }
 
         [HttpPatch("EditarOferta")]
-        [Authorize]
         public async Task<IActionResult> EditarOferta([FromQuery] int ofertaID, [FromBody] OfertaModif ofertaEntrada)
         {
             try
@@ -343,8 +342,46 @@ namespace apiweb_ProyectoFinal.Controllers
             }
         }
 
+        [HttpPatch("CancelarOferta")]
+        public async Task<IActionResult> CancelarOferta([FromQuery] int usuarioID, [FromBody] int ofertaID)
+        {
+            try
+            {
+
+                bool resultado = await _ofertasServicios.OfertaCancelar(usuarioID,ofertaID);
+
+                if (!resultado) return BadRequest(new { Mensaje = "Ah ocurrido un error al intentar cancelar la oferta" });
+
+                return NoContent();
+
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError(ex, "Error al cancelar la oferta");
+                return StatusCode(500);
+            }
+        }
+
+        [HttpPatch("CancelarOfertas")]
+        public async Task<IActionResult> CancelarOfertas([FromQuery] int usuarioID)
+        {
+            try
+            {
+                bool resultado = await _ofertasServicios.OfertasCancelar(usuarioID);
+
+                if (!resultado) return BadRequest(new { Mensaje = "Ah ocurrido un error al intentar cancelar las ofertas" });
+
+                return NoContent();
+
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError(ex, "Error al cancelar las ofertas");
+                return StatusCode(500);
+            }
+        }
+
         [HttpDelete("EliminarPublicacion")]
-        [Authorize]
         public async Task<IActionResult> EliminarPublicacion([FromQuery] int publicacionID)
         {
             try
@@ -371,7 +408,6 @@ namespace apiweb_ProyectoFinal.Controllers
         }
 
         [HttpDelete("EliminarPublicaciones")]
-        [Authorize]
         public async Task<IActionResult> EliminarPublicaciones([FromBody]int usuarioID)
         {
             try
@@ -390,8 +426,8 @@ namespace apiweb_ProyectoFinal.Controllers
             }
         }
 
+
         [HttpDelete("EliminarOferta")]
-        [Authorize]
         public async Task<IActionResult> Eliminar([FromQuery] int ofertaID)
         {
             try
@@ -418,7 +454,6 @@ namespace apiweb_ProyectoFinal.Controllers
         }
 
         [HttpDelete("EliminarOfertas")]
-        [Authorize]
         public async Task<IActionResult> EliminarTodo([FromBody]int usuarioID)
         {
             try

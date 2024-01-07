@@ -157,6 +157,48 @@ namespace apiweb_ProyectoFinal.Controllers
             }
         }
 
+        [HttpPatch("CancelarOferta")]
+        [Authorize]
+        public async Task<IActionResult> CancelarOferta([FromBody] int ofertaID)
+        {
+            try
+            {
+                int usuarioID = await _metodosDeValidacion.ObtenerUsuarioIDToken();
+                bool resultado = await _ofertasServicios.OfertaCancelar(usuarioID, ofertaID);
+
+                if (!resultado) return BadRequest(new { Mensaje = "Ah ocurrido un error al intentar cancelar la oferta" });
+
+                return NoContent();
+
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError(ex, "Error al cancelar la oferta");
+                return StatusCode(500);
+            }
+        }
+
+        [HttpPatch("CancelarOfertas")]
+        [Authorize]
+        public async Task<IActionResult> CancelarOfertas()
+        {
+            try
+            {
+                int usuarioID = await _metodosDeValidacion.ObtenerUsuarioIDToken();
+                bool resultado = await _ofertasServicios.OfertasCancelar(usuarioID);
+
+                if (!resultado) return BadRequest(new { Mensaje = "Ah ocurrido un error al intentar cancelar las ofertas" });
+
+                return NoContent();
+
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError(ex, "Error al cancelar las ofertas");
+                return StatusCode(500);
+            }
+        }
+
         [HttpDelete("Eliminar")]
         [Authorize]
         public async Task<IActionResult> Eliminar([FromQuery] int ofertaID)

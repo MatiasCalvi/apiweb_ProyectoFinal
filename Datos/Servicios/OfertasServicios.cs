@@ -98,7 +98,17 @@ namespace Datos.Servicios
             bool resultado = await _daoBDOfertas.DesasociarPublicaciones(pId);
             return resultado;
         }
+        public async Task<bool> OfertaCancelar(int pUsuarioID, int pOfertaID)
+        {
+            DateTime fecha = DateTime.Now;
+            return await _daoBDOfertas.OfertaCancelar(pUsuarioID, pOfertaID, fecha);
+        }
 
+        public async Task<bool> OfertasCancelar(int pUsuarioID)
+        {
+            DateTime fecha = DateTime.Now;
+            return await _daoBDOfertas.OfertaCancelar(pUsuarioID, null, fecha);
+        }
         public async Task<bool> EliminarOferta(int pOfertaID)
         {
             bool resultado = await _daoBDOfertas.EliminarOferta(pOfertaID,null);

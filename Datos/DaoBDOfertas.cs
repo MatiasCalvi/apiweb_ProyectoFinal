@@ -253,6 +253,26 @@ namespace Datos
                 throw new DatabaseTransactionException($"Error al eliminar la oferta y sus publicaciones: {ex.Message}");
             }
         }
+
+        public async Task<bool> OfertaCancelar(int pUsuarioID, int? pOfertaID, DateTime pFecha)
+        {
+            try
+            {
+                using IDbConnection dbConnection = CreateConnection();
+                dbConnection.Open();
+
+                bool filas = await dbConnection.ExecuteScalarAsync<bool>(
+                    _ofertaQuerys.procesoAlmCan,
+                    new { OfertaID = pOfertaID, UsuarioID = pUsuarioID, PFecha = pFecha },
+                    commandType: CommandType.StoredProcedure);
+
+                return filas;
+            }
+            catch (Exception ex)
+            {
+                throw new DatabaseTransactionException($"Error al cancelar: {ex.Message}");
+            }
+        }
     }
 }
 

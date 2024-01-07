@@ -5,6 +5,7 @@ using Datos.Interfaces.IDaos;
 using Datos.Interfaces.IQuerys;
 using Datos.Modelos;
 using Datos.Modelos.DTO;
+using Datos.Querys;
 using Microsoft.Extensions.Options;
 using MySql.Data.MySqlClient;
 using System.Data;

@@ -13,6 +13,8 @@ namespace Datos.Interfaces.IServicios
         Task<OfertaSalidaC> CrearOferta(OfertaCreacion oferta);
         Task<bool> EditarOferta(int pId, OfertaModif pOfertaModif);
         Task<bool> DesasociarPublicaciones(int pId);
+        Task<bool> OfertaCancelar(int pUsuarioID, int pOfertaID);
+        Task<bool> OfertasCancelar(int pUsuarioID);
         Task<bool> EliminarOferta(int pOfertaID);
         Task<bool> EliminarOfertas(int pUsuarioID);
     }
