@@ -9,6 +9,7 @@ namespace Datos.Modelos.DTO
         public string Public_Nombre { get; set; }
         public string Public_Descripcion { get; set; }
         public decimal Public_Precio { get; set; }
+        public decimal Public_PrecioFinal { get; set; }
         public string Public_Imagen { get; set; }
         public int Public_Stock { get; set; }
         public string Public_Estado { get; set; }

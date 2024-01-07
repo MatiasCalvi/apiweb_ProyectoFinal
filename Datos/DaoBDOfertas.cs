@@ -28,13 +28,14 @@ namespace Datos
             return dbConnection;
         }
 
-        public async Task<List<OfertaSalida>> ObtenerOfertas()
+        public async Task<List<OfertaSalida>> ObtenerOfertas(DateTime pFechaActual)
         {
             using IDbConnection dbConnection = CreateConnection();
             dbConnection.Open();
 
             using var reader = await dbConnection.QueryMultipleAsync(
-                _ofertaQuerys.procesoAlmObt, 
+                _ofertaQuerys.procesoAlmObt,
+                new { FechaActual = pFechaActual },
                 commandType: CommandType.StoredProcedure
             );
 
@@ -98,20 +99,45 @@ namespace Datos
             return ofertaSalida;
         }
 
-        public async Task<bool> VerificarAutoria(int ofertaID, int usuarioId)
+        public async Task<bool> VerificarAutoria(int pOfertaID, int pUsuarioId)
         {
             using IDbConnection dbConnection = CreateConnection();
             dbConnection.Open();
 
-            int count = await dbConnection.ExecuteScalarAsync<int>(
+            int verificar = await dbConnection.ExecuteScalarAsync<int>(
                 _ofertaQuerys.verificarCreador, 
-                new { Public_UsuarioID = usuarioId, 
-                Public_ID = ofertaID 
-            });
+                new { Public_UsuarioID = pUsuarioId, 
+                Public_ID = pOfertaID
+                });
 
-            return count == 1;
+            return verificar == 1;
         }
 
+        public async Task<int> VerificarDescuento(int pPublicID) 
+        {                                                                       
+            using IDbConnection dbConnection = CreateConnection();
+            dbConnection.Open();
+
+            DateTime fechaActual = DateTime.Now;
+
+            IDataReader reader = await dbConnection.ExecuteReaderAsync(
+                _ofertaQuerys.procesoVDescuento,
+                new
+                {
+                    PublicID = pPublicID,
+                    FechaActual = fechaActual,
+                });
+
+            int descuento = 0;
+
+            if (reader.Read())
+            {
+                descuento = reader[0] as int? ?? 0;
+            }
+
+            reader.Close();
+            return descuento;
+        }
 
         public async Task<List<OfertaSalida>> ObtenerOfertasPorUsuarioID(int pId)
         {
@@ -195,43 +221,13 @@ namespace Datos
             return filasAfectadas > 0;
         }
 
-        public async Task<bool> VerificarOfertaEstado(int pOfertaID, int pEstadoID)
-        {
-            using IDbConnection dbConnection = CreateConnection();
-            dbConnection.Open();
-
-            var resultado = await dbConnection.QueryFirstOrDefaultAsync<int>(
-                _ofertaQuerys.procesoAlmVEstado,
-                new { 
-                        OfertaID = pOfertaID, 
-                        EstadoID = pEstadoID 
-                },
-                commandType: CommandType.StoredProcedure
-            );
-
-            return resultado == 1;
-        }
-
-        public async Task<bool> CambiarEstadoOferta(int pOfertaID, int pEstadoID)
-        {
-            using IDbConnection dbConnection = CreateConnection();
-            dbConnection.Open();
-
-            int filasAfectadas = await dbConnection.ExecuteAsync(
-                _ofertaQuerys.procesoAlmEstado,
-                new { OfertaID = pOfertaID, EstadoID = pEstadoID}
-            );
-
-            return filasAfectadas > 0;
-        }
-
         public async Task<bool> DesasociarPublicaciones(int pOfertaID)
         {
             using IDbConnection dbConnection = CreateConnection();
             dbConnection.Open();
 
             int filasAfectadas = await dbConnection.ExecuteAsync(
-                _ofertaQuerys.DesasociarPublicaciones,
+                _ofertaQuerys.desasociarPublicaciones,
                 new { OfertaID = pOfertaID }
             );
 

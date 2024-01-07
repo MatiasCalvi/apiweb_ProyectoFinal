@@ -47,7 +47,7 @@ namespace Datos
                                                                         obj.Public_UsuarioID, 
                                                                         obj.Public_Nombre, 
                                                                         obj.Public_Descripcion, 
-                                                                        obj.Public_Precio, 
+                                                                        obj.Public_Precio,
                                                                         obj.Public_Imagen, 
                                                                         obj.Public_Stock,
                                                                         obj.Public_Estado);

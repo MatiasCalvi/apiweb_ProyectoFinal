@@ -3,7 +3,6 @@ using Datos.Interfaces.IServicios;
 using Datos.Interfaces.IValidaciones;
 using Datos.Modelos;
 using Datos.Modelos.DTO;
-using System.Security.Cryptography;
 
 namespace Datos.Servicios
 {
@@ -12,16 +11,38 @@ namespace Datos.Servicios
         private IDaoBDCarrito _daoBDCarrito;
         private IMetodosDeValidacion _metodosDeValidacion;
         private IPublicacionServicios _publicacionServicios;
-        public CarritoServicios(IDaoBDCarrito daoBDCarrito, IMetodosDeValidacion metodosDeValidacion, IPublicacionServicios publicacionServicios)
+        private IOfertasServicios _ofertasServicios;
+        public CarritoServicios(IDaoBDCarrito daoBDCarrito, IMetodosDeValidacion metodosDeValidacion, IPublicacionServicios publicacionServicios, IOfertasServicios ofertasServicios)
         {
             _daoBDCarrito = daoBDCarrito;
             _metodosDeValidacion = metodosDeValidacion;
             _publicacionServicios = publicacionServicios;
+            _ofertasServicios = ofertasServicios;
         }
 
         public async Task<List<CarritoSalida>> ObtenerCarrito(int pUsuarioID)
         {
-            return await _daoBDCarrito.ObtenerCarrito(pUsuarioID);
+            List<CarritoSalida> lista = await _daoBDCarrito.ObtenerCarrito(pUsuarioID);
+            List<CarritoSalida> nuevalista = new List<CarritoSalida>();
+            int descuento;
+
+            foreach (CarritoSalida carrito in lista)
+            {
+                descuento = await _ofertasServicios.VerificarDescuento(carrito.Publicacion.Public_ID);
+                if (descuento == 0)
+                {
+                    carrito.Publicacion.Public_PrecioFinal = carrito.Publicacion.Public_Precio;
+                    nuevalista.Add(carrito);
+                }
+                else
+                {
+                    decimal porcentajeDescuento = descuento / 100m;
+                    decimal complemento = 1 - porcentajeDescuento;
+                    carrito.Publicacion.Public_PrecioFinal = carrito.Publicacion.Public_Precio * complemento;
+                    nuevalista.Add(carrito);
+                }
+            }
+            return nuevalista;
         }
 
         public async Task<bool> Agregar(int pUsuarioID, CarritoCreacion pCarrito)
@@ -61,9 +82,17 @@ namespace Datos.Servicios
         }
 
         private async Task<decimal> CalcularPrecioFinal(int pPublicacionID, int unidadesProducto)
-        {
+        {   
+            int descuento = await _ofertasServicios.VerificarDescuento(pPublicacionID);
             PublicacionSalida publicacion = await _publicacionServicios.ObtenerPublicacionPorID(pPublicacionID);
-            return publicacion.Public_Precio * unidadesProducto;
+            
+            if(descuento == 0) return publicacion.Public_Precio * unidadesProducto;
+
+            decimal porcentajeDescuento = descuento / 100m;
+            decimal complemento = 1 - porcentajeDescuento;
+            decimal precioConDescuento = publicacion.Public_Precio * complemento;
+
+            return precioConDescuento * unidadesProducto;
         }
 
         public async Task<bool> ReducirStock (int publicacionID, int unidades)
@@ -88,8 +117,9 @@ namespace Datos.Servicios
             if (publicacion.Public_Stock == 0)
             {
                 publicacionFinal.Public_Estado = 4;
+                
                 await _publicacionServicios.CambiarEstadoPublicacion(publicacionID,4);
-                                                                                                                    //optimizar esto
+                                                                                                
                 await _publicacionServicios.EditarPublicacion(publicacionID, publicacionFinal);
 
                 return true;

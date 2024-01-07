@@ -10,6 +10,7 @@ using System.Security.Cryptography;
 using System.Text;
 using Microsoft.IdentityModel.Tokens;
 using System.IdentityModel.Tokens.Jwt;
+using Datos.Interfaces.IModelos;
 
 namespace Datos.Validaciones
 {
@@ -27,7 +28,6 @@ namespace Datos.Validaciones
             _daoBDUsuarioAcceso = daoBDUsuarioAcceso;
             _jwtConfiguration = jwtConfiguration.Value;
         }
-
 
         public async Task<string> HashContra(string pContra)
         {
@@ -262,6 +262,5 @@ namespace Datos.Validaciones
 
             _httpContextAccessor.HttpContext.Response.Cookies.Append("RefreshToken", refreshToken, cookie);
         }
-
     }
 }

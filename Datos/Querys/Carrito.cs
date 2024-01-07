@@ -10,6 +10,5 @@ namespace Datos.Querys
         public string agregarAlHistorialQuery { get; set; } = "INSERT INTO historial_compras(HC_UsuarioID,HC_PID,HC_Unidades,HC_PrecioFinal,HC_FechaCompra) VALUES(@HC_UsuarioID, @HC_PID,@HC_Unidades, @HC_PrecioFinal,@HC_FechaCompra)";
         public string eliminarQuery { get; set; } = "DELETE FROM carrito WHERE Carrito_UsuarioID = @Carrito_UsuarioID AND Carrito_PID = @Carrito_PID";
         public string eliminarTodoQuery { get; set; } = "DELETE FROM carrito WHERE Carrito_UsuarioID = @Carrito_UsuarioID";
-
     }
 }

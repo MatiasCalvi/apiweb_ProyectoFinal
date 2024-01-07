@@ -11,11 +11,13 @@ namespace Datos.Servicios
     {
         private IDaoBDAdmins _daoBDAdmins;
         private IPublicacionServicios _publicacionServicios;
+        private IOfertasServicios _ofertasServicios;
 
-        public AdminServicios(IDaoBDAdmins daoBDAdmins, IPublicacionServicios publicacionServicios)
+        public AdminServicios(IDaoBDAdmins daoBDAdmins, IPublicacionServicios publicacionServicios, IOfertasServicios ofertasServicios)
         {
             _daoBDAdmins = daoBDAdmins;
             _publicacionServicios = publicacionServicios;
+            _ofertasServicios = ofertasServicios;
         }
 
         public async Task<List<UsuarioSalida>> ObtenerTodosLosUsuarios()
@@ -25,17 +27,79 @@ namespace Datos.Servicios
 
         public async Task<List<PublicacionSalida>> ObtenerPublicaciones()
         {
-            return await _daoBDAdmins.ObtenerPublicaciones();
+            List<PublicacionSalida> lista = await _daoBDAdmins.ObtenerPublicaciones();
+            List<PublicacionSalida> nuevalista = new List<PublicacionSalida>();
+            int descuento;
+
+            foreach (PublicacionSalida publicacion in lista)
+            {
+                descuento = await _ofertasServicios.VerificarDescuento(publicacion.Public_ID);
+                publicacion.Public_PrecioFinal = publicacion.Public_Precio;
+                if (descuento == 0)
+                {
+                    publicacion.Public_PrecioFinal = publicacion.Public_Precio;
+                    nuevalista.Add(publicacion);
+                }
+                else
+                {
+                    decimal porcentajeDescuento = descuento / 100m;
+                    decimal complemento = 1 - porcentajeDescuento;
+                    publicacion.Public_PrecioFinal = publicacion.Public_Precio * complemento;
+                    nuevalista.Add(publicacion);
+                }
+            }
+            return nuevalista;
         }
 
         public async Task<List<PublicacionSalida>> PublicacionesDeUnUsuario(int pUsuarioID)
         {
-            return await _daoBDAdmins.PublicacionesDeUnUsuario(pUsuarioID);
+            List<PublicacionSalida> lista = await _daoBDAdmins.PublicacionesDeUnUsuario(pUsuarioID); 
+            List<PublicacionSalida> nuevalista = new List<PublicacionSalida>();
+            int descuento;
+
+            foreach (PublicacionSalida publicacion in lista)
+            {
+                descuento = await _ofertasServicios.VerificarDescuento(publicacion.Public_ID);
+                publicacion.Public_PrecioFinal = publicacion.Public_Precio;
+                if (descuento == 0)
+                {
+                    publicacion.Public_PrecioFinal = publicacion.Public_Precio;
+                    nuevalista.Add(publicacion);
+                }
+                else
+                {
+                    decimal porcentajeDescuento = descuento / 100m;
+                    decimal complemento = 1 - porcentajeDescuento;
+                    publicacion.Public_PrecioFinal = publicacion.Public_Precio * complemento;
+                    nuevalista.Add(publicacion);
+                }
+            }
+            return nuevalista;
         }
 
         public async Task<List<CarritoSalida>> ObtenerCarritos()
         {
-            return await _daoBDAdmins.ObtenerCarritos();
+            List<CarritoSalida> lista = await _daoBDAdmins.ObtenerCarritos();
+            List<CarritoSalida> nuevalista = new List<CarritoSalida>();
+            int descuento;
+
+            foreach (CarritoSalida carrito in lista)
+            {
+                descuento = await _ofertasServicios.VerificarDescuento(carrito.Publicacion.Public_ID);
+                if (descuento == 0)
+                {
+                    carrito.Publicacion.Public_PrecioFinal = carrito.Publicacion.Public_Precio;
+                    nuevalista.Add(carrito);
+                }
+                else
+                {
+                    decimal porcentajeDescuento = descuento / 100m;
+                    decimal complemento = 1 - porcentajeDescuento;
+                    carrito.Publicacion.Public_PrecioFinal = carrito.Publicacion.Public_Precio * complemento;
+                    nuevalista.Add(carrito);
+                }
+            }
+            return nuevalista;
         }
 
         public async Task<List<HistoriaCompraSalida>> ObtenerHistoriales()

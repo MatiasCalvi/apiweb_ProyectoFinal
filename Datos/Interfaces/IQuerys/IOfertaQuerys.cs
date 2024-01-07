@@ -14,7 +14,8 @@
         public string procesoAlmElim { get; }
         public string procesoAlmVEstado { get; }
         public string procesoAlmEstado { get; }
-        public string DesasociarPublicaciones { get; }
+        public string procesoVDescuento { get; }
+        public string desasociarPublicaciones { get; }
 
     }
 }

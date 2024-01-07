@@ -12,7 +12,8 @@ namespace Datos.Querys
         public string procesoAlmElim { get; set; } = "Eliminar_Oferta";
         public string procesoAlmVEstado { get; set; } = "VerificarEstado_Oferta";
         public string procesoAlmEstado { get; set; } = "CambiarEstado_Oferta";
-        public string DesasociarPublicaciones { get; } = "DesasociarPublic_Ofertas";
+        public string procesoVDescuento { get; set; } = "Verificar_Descuento";
+        public string desasociarPublicaciones { get; } = "DesasociarPublic_Ofertas";
         public string asociarProductoAOfertaQuery { get; set; } = "INSERT INTO ofertas_publicaciones(OP_OfertaID, OP_PublicID) VALUES (@Oferta_ID, @Public_ID);";
         public string publicacionesEnOfertaQuery { get; set; } = "SELECT COUNT(*) FROM ofertas_publicaciones WHERE OP_PublicID IN @ProductosIds";
         public string publicacionesUsuarioQuery { get; set; } = "SELECT COUNT(*) FROM publicaciones WHERE Public_ID IN @ProductosIds AND Public_UsuarioID = @UsuarioId";

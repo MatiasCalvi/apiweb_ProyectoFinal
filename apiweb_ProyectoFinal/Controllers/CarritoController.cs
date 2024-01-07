@@ -1,4 +1,5 @@
-﻿using Datos.Interfaces.IServicios;
+﻿using Datos.Interfaces.IModelos;
+using Datos.Interfaces.IServicios;
 using Datos.Interfaces.IValidaciones;
 using Datos.Modelos.DTO;
 using Microsoft.AspNetCore.Authorization;
@@ -61,7 +62,12 @@ namespace apiweb_ProyectoFinal.Controllers
 
                 if (resultado == null) return BadRequest(new { Mensaje = "No se pudo agregar al carrito" });
 
-                return Ok(new { Msj = "Se agrego al carrito satisfactoriamente", Data = publicacionExiste });
+                return Ok(
+                        new { 
+                                Msj = "Se agrego al carrito satisfactoriamente", 
+                                Data = publicacionExiste ,
+                                UnidadesPedidas = carrito.Carrito_ProdUnidades 
+                        });
 
             }
             catch (Exception ex)
@@ -76,14 +82,18 @@ namespace apiweb_ProyectoFinal.Controllers
         {
             try
             {
-                PublicacionSalida publicacionExiste = await _publicacionServicios.ObtenerPublicacionPorID(carrito.Carrito_PID);
-                
-                if (publicacionExiste == null) return NotFound(new { Mensaje = "publicacion no encontrada" });
+                PublicacionSalida publicacion = await _publicacionServicios.ObtenerPublicacionPorID(carrito.Carrito_PID);
+                if (publicacion == null) return NotFound(new { Mensaje = "publicacion no encontrada" });
+
+                int usuarioId = await _metodosDeValidacion.ObtenerUsuarioIDToken();
+                bool existeEnCarrito = await _carritoServicios.Duplicado(usuarioId,carrito.Carrito_PID);
+
+                if (!existeEnCarrito) return NotFound(new { Mensaje = "No se encuentra el producto en el carrito"});
 
                 bool stock = await _carritoServicios.ReducirStock(carrito.Carrito_PID, carrito.Carrito_ProdUnidades);
 
                 if (!stock) return BadRequest(new{ Mensaje = "No hay stock" });
-
+                
                 bool compra = await _carritoServicios.AgregarAlHistorial(carrito.Carrito_PID, carrito.Carrito_ProdUnidades);
 
                 if (!compra) return BadRequest(new {Mensaje = "No se ha podido efectuar la compra" });
@@ -103,21 +113,33 @@ namespace apiweb_ProyectoFinal.Controllers
             try
             {
                 int usuarioID = await _metodosDeValidacion.ObtenerUsuarioIDToken();
+                IActionResult errorResult = null;
 
                 List<CarritoSalida> carritoDetallado = await _carritoServicios.ObtenerCarrito(usuarioID);
+                
+                if(carritoDetallado.Count == 0) return BadRequest();
 
                 foreach (var carritoItem in carritoDetallado)
                 {
                     bool stock = await _carritoServicios.ReducirStock(carritoItem.Carrito_PID, carritoItem.Carrito_ProdUnidades);
-
-                    if (!stock) return BadRequest(new { Mensaje = $"No hay stock para el producto '{carritoItem.Publicacion.Public_Nombre}' en el carrito" });
+                    if (!stock)
+                    {
+                        errorResult = BadRequest(new { Mensaje = $"No hay stock para el producto '{carritoItem.Publicacion.Public_Nombre}' en el carrito" });
+                        break;
+                    }
 
                     bool compra = await _carritoServicios.AgregarAlHistorial(carritoItem.Carrito_PID, carritoItem.Carrito_ProdUnidades);
-
-                    if (!compra) return BadRequest(new { Mensaje = $"No se ha podido efectuar la compra para el producto '{carritoItem.Publicacion.Public_Nombre}' en el carrito" });
+                    if (!compra)
+                    {
+                        errorResult = BadRequest(new { Mensaje = $"No se ha podido efectuar la compra para el producto '{carritoItem.Publicacion.Public_Nombre}' en el carrito" });
+                        break;
+                    }
                 }
 
-                return Ok(new { Mensaje = "Se ha comprado satisfactoriamente" });
+                if (errorResult != null) return errorResult;
+                
+                else return Ok(new { Mensaje = "Se ha comprado satisfactoriamente" });
+                
             }
             catch (Exception ex)
             {
