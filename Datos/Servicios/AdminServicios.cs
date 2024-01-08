@@ -202,7 +202,7 @@ namespace Datos.Servicios
             return actualizado;
         }
 
-        public async Task<bool> EditarOfertaAdmin(int pId, OfertaModif pOfertaModif)
+        public async Task<bool> EditarOfertaAdmin(int pId, OfertaModifA pOfertaModif)
         {
             DateTime fechaActual = DateTime.Now;
             pOfertaModif.Oferta_FModif = fechaActual;

@@ -19,6 +19,6 @@ namespace Datos.Interfaces.IDaos
         Task<bool> AsignarRolAAdmin(int pUsuarioId);
         Task<bool> AsignarRolAUsuario(int usuarioId);
         Task<bool> EditarPublicacion(int pId, PublicacionModifA pPublicacionModif);
-        Task<bool> EditarOfertaAdmin(int pId, OfertaModif pOfertaModif);
+        Task<bool> EditarOfertaAdmin(int pId, OfertaModifA pOfertaModif);
     }
 }

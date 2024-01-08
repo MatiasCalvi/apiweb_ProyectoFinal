@@ -14,7 +14,7 @@
         public string desactivarUsuarioQuery { get; }
         public string asignarRolAAdminQuery { get; }
         public string asignarRolAUsuarioQuery { get; }
-        public string procesoAlmEdit { get; }
+        public string procesoAlmEditAdmin { get; }
         public string procesoAlmCan { get; }
     }
 }

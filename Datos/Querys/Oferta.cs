@@ -8,7 +8,7 @@ namespace Datos.Querys
         public string traerOfertasPorUsuarioID { get; set; } = "TraerOfertasPorUsuarioID";
         public string procesoAlmObt { get; set; } = "TraerOfertasActivas";
         public string procesoAlmCrear { get; set; } = "Creacion_Oferta";
-        public string procesoAlmEdit { get; set; } = "Editar_Oferta";
+        public string procesoAlmEdit { get; set; } = "Editar_Oferta"; 
         public string procesoAlmElim { get; set; } = "Eliminar_Oferta";
         public string procesoAlmCan { get; set; } = "Cancelar_Ofertas";
         public string procesoAlmVEstado { get; set; } = "VerificarEstado_Oferta";

@@ -294,7 +294,7 @@ namespace Datos
 
         }
 
-        public async Task<bool> EditarOfertaAdmin(int pId, OfertaModif pOfertaModif)
+        public async Task<bool> EditarOfertaAdmin(int pId, OfertaModifA pOfertaModif)
         {
             using IDbConnection dbConnection = CreateConnection();
             dbConnection.Open();
@@ -302,6 +302,7 @@ namespace Datos
             var parametros = new DynamicParameters();
 
             parametros.Add("pOfertaNombre", pOfertaModif.Oferta_Nombre);
+            parametros.Add("pOfertaUsuarioID", pOfertaModif.Oferta_UsuarioID);
             parametros.Add("pOfertaDescuento", pOfertaModif.Oferta_Descuento);
             parametros.Add("pOfertaFInicio", pOfertaModif.Oferta_FInicio);
             parametros.Add("pOfertaFFin", pOfertaModif.Oferta_FFin);
@@ -310,11 +311,11 @@ namespace Datos
             parametros.Add("pOfertaFModif", pOfertaModif.Oferta_FModif);
 
             int filasAfectadas = await dbConnection.ExecuteAsync(
-                _adminQuery.procesoAlmEdit,
+                _adminQuery.procesoAlmEditAdmin,
                 parametros,
                 commandType: CommandType.StoredProcedure
             );
-
+            Console.WriteLine(filasAfectadas);
             return filasAfectadas > 0;
         }
     }

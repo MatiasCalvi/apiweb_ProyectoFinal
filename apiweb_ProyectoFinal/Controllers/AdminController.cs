@@ -320,7 +320,7 @@ namespace apiweb_ProyectoFinal.Controllers
         }
 
         [HttpPatch("EditarOferta")]
-        public async Task<IActionResult> EditarOferta([FromQuery] int ofertaID, [FromBody] OfertaModif ofertaEntrada)
+        public async Task<IActionResult> EditarOferta([FromQuery] int ofertaID, [FromBody] OfertaModifA ofertaEntrada)
         {
             try
             {

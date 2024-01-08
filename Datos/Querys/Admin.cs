@@ -16,7 +16,7 @@ namespace Datos.Querys
         public string desactivarUsuarioQuery { get; set; } = "UPDATE usuarios SET Usuario_Estado = 2 WHERE Usuario_ID = @Usuario_ID";
         public string asignarRolAAdminQuery { get; set; } = "UPDATE usuarios SET Usuario_Role = 2 WHERE Usuario_ID = @Usuario_ID";
         public string asignarRolAUsuarioQuery { get; set; } = "UPDATE usuarios SET Usuario_Role = 1 WHERE Usuario_ID = @Usuario_ID";
-        public string procesoAlmEdit { get; set; } = "EditarAdmin_Oferta";
+        public string procesoAlmEditAdmin { get; set; } = "Editar_OfertaAdmin";
         public string procesoAlmCan { get; set; } = "Cancelar_Ofertas";
     }
 }

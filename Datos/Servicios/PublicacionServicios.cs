@@ -49,6 +49,9 @@ namespace Datos.Servicios
         {
             PublicacionSalida publicacion = await _daoBDPublicaciones.ObtenerPublicacionPorID(pId);
             int descuento = await _ofertasServicios.VerificarDescuento(pId);
+            
+            if (publicacion == null) return publicacion;
+
             if (descuento == 0) 
             {
                 publicacion.Public_PrecioFinal = publicacion.Public_Precio;

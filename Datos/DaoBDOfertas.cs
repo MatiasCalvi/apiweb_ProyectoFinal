@@ -39,25 +39,29 @@ namespace Datos
                 commandType: CommandType.StoredProcedure
             );
 
-            var ofertas = reader.Read<OfertaSalida, PublicacionSalida, OfertaSalida>(
+            var uniqueOffers = new Dictionary<int, OfertaSalida>();
+
+            reader.Read<OfertaSalida, PublicacionSalida, OfertaSalida>(
                 (oferta, publicacion) =>
                 {
-                    if (oferta.Oferta_ProdOfer == null)
+                    if (!uniqueOffers.TryGetValue(oferta.Oferta_ID, out var existingOffer))
                     {
-                        oferta.Oferta_ProdOfer = new List<PublicacionSalida>();
+                        existingOffer = oferta;
+                        existingOffer.Oferta_ProdOfer = new List<PublicacionSalida>();
+                        uniqueOffers[oferta.Oferta_ID] = existingOffer;
                     }
 
-                    if (publicacion != null && !oferta.Oferta_ProdOfer.Any(p => p.Public_ID == publicacion.Public_ID))
+                    if (publicacion != null)
                     {
-                        oferta.Oferta_ProdOfer.Add(publicacion);
+                        existingOffer.Oferta_ProdOfer.Add(publicacion);
                     }
 
-                    return oferta;
+                    return existingOffer;
                 },
                 splitOn: "Public_ID"
-            ).ToList();
+            );
 
-            return ofertas.ToList();
+            return uniqueOffers.Values.ToList();
         }
 
         public async Task<OfertaSalida> ObtenerOfertaPorID(int pId)
@@ -74,7 +78,7 @@ namespace Datos
                         oferta.Oferta_ProdOfer = new List<PublicacionSalida>();
                     }
 
-                    if (publicacion != null) 
+                    if (publicacion != null)
                     {
                         oferta.Oferta_ProdOfer.Add(publicacion);
                     }
@@ -87,17 +91,14 @@ namespace Datos
 
             var ofertaSalida = result.FirstOrDefault();
 
-            if (ofertaSalida == null)
+            if (ofertaSalida == null || ofertaSalida.Oferta_ID == 0)
             {
-                return new OfertaSalida
-                {
-                    Oferta_ID = pId,
-                    Oferta_ProdOfer = new List<PublicacionSalida>()
-                };
+                return null;
             }
 
             return ofertaSalida;
         }
+
 
         public async Task<bool> VerificarAutoria(int pOfertaID, int pUsuarioId)
         {
@@ -148,8 +149,16 @@ namespace Datos
                 _ofertaQuerys.traerOfertasPorUsuarioID,
                 map: (oferta, publicacion) =>
                 {
-                    oferta.Oferta_ProdOfer = new List<PublicacionSalida>();
-                    oferta.Oferta_ProdOfer.Add(publicacion);
+                    if (oferta.Oferta_ProdOfer == null)
+                    {
+                        oferta.Oferta_ProdOfer = new List<PublicacionSalida>();
+                    }
+
+                    if (publicacion != null && !oferta.Oferta_ProdOfer.Any(p => p.Public_ID == publicacion.Public_ID))
+                    {
+                        oferta.Oferta_ProdOfer.Add(publicacion);
+                    }
+
                     return oferta;
                 },
                 param: new { UsuarioID = pId },
@@ -159,10 +168,13 @@ namespace Datos
 
             var ofertasSalida = result.GroupBy(o => o.Oferta_ID).Select(g =>
             {
-                var oferta = g.First();
-                oferta.Oferta_ProdOfer = g.Select(o => o.Oferta_ProdOfer.First()).ToList();
+                var oferta = g.FirstOrDefault();
+                if (oferta != null)
+                {
+                    oferta.Oferta_ProdOfer = g.Select(o => o.Oferta_ProdOfer.FirstOrDefault()).Where(p => p != null).ToList();
+                }
                 return oferta;
-            }).ToList();
+            }).Where(o => o != null).ToList();
 
             return ofertasSalida;
         }
