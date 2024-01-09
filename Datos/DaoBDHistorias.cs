@@ -1,8 +1,8 @@
 ﻿using Configuracion;
 using Dapper;
 using Datos.Interfaces.IDaos;
-using Datos.Interfaces.IQuerys;
 using Datos.Modelos.DTO;
+using Datos.Querys;
 using Microsoft.Extensions.Options;
 using MySql.Data.MySqlClient;
 using System.Data;
@@ -12,12 +12,10 @@ namespace Datos
     public class DaoBDHistorias : IDaoBDHistorias
     {
         private readonly string connectionString;
-        private IHistoriaQuerys _historiasQuery;
 
-        public DaoBDHistorias(IOptions<BDConfiguration> dbConfig, IHistoriaQuerys historiasQuery)
+        public DaoBDHistorias(IOptions<BDConfiguration> dbConfig)
         {
             connectionString = dbConfig.Value.ConnectionString;
-            _historiasQuery = historiasQuery;
         }
 
         private IDbConnection CreateConnection()
@@ -32,7 +30,7 @@ namespace Datos
             dbConnection.Open();
 
            return (await dbConnection.QueryAsync<HistoriaCompraSalida>(
-               _historiasQuery.obtenerHistorialQuery, 
+               HistoriaQuerys.obtenerHistorialQuery, 
                new { HC_UsuarioID = pUsuarioID }
            )).ToList();
         }

@@ -90,6 +90,22 @@ namespace apiweb_ProyectoFinal.Controllers
             }
         }
 
+        [HttpGet("ObtenerHistorial")]
+        public async Task<IActionResult> ObtenerHistorial([FromQuery] int usuarioID)
+        {
+            try
+            {
+                List<HistoriaCompraSalida> historial = await _adminServicios.ObtenerHistorial(usuarioID);
+
+                return Ok(historial);
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError(ex, "Error al obtener los historiales");
+                return StatusCode(500);
+            }
+        }
+
         [HttpGet("ObtenerHistoriales")]
         public async Task<IActionResult> ObtenerHistoriales()
         {
@@ -315,6 +331,32 @@ namespace apiweb_ProyectoFinal.Controllers
             catch (Exception ex)
             {
                 _logger.LogError(ex,$"Error al activar la publicacion: {publicacionID}");
+                return StatusCode(500);
+            }
+        }
+
+        [HttpPatch("QuitarProductos")]
+        public async Task<IActionResult> QuitarProductos([FromQuery] int ofertaID)
+        {
+            try
+            {
+                OfertaSalida oferta = await _ofertasServicios.ObtenerOfertaPorID(ofertaID);
+
+                if (oferta == null)
+                {
+                    return NotFound(new { Mensaje = $"Oferta con ID: {ofertaID} no encontrada" });
+                }
+
+                bool resultado = await _adminServicios.DesasociarPublicaciones(ofertaID);
+
+                if (!resultado) return BadRequest();
+
+                return NoContent();
+
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError(ex, $"Error al desasociar las publicaciones de la oferta {ofertaID}");
                 return StatusCode(500);
             }
         }

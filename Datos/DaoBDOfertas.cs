@@ -2,9 +2,9 @@
 using Dapper;
 using Datos.Exceptions;
 using Datos.Interfaces.IDaos;
-using Datos.Interfaces.IQuerys;
 using Datos.Modelos;
 using Datos.Modelos.DTO;
+using Datos.Querys;
 using Microsoft.Extensions.Options;
 using MySql.Data.MySqlClient;
 using System.Data;
@@ -14,12 +14,10 @@ namespace Datos
     public class DaoBDOfertas : IDaoBDOfertas
     {
         private readonly string connectionString;
-        private IOfertaQuerys _ofertaQuerys;
 
-        public DaoBDOfertas(IOptions<BDConfiguration> dbConfig, IOfertaQuerys ofertaQuerys)
+        public DaoBDOfertas(IOptions<BDConfiguration> dbConfig)
         {
             connectionString = dbConfig.Value.ConnectionString;
-            _ofertaQuerys = ofertaQuerys;
         }
 
         private IDbConnection CreateConnection()
@@ -34,34 +32,34 @@ namespace Datos
             dbConnection.Open();
 
             using var reader = await dbConnection.QueryMultipleAsync(
-                _ofertaQuerys.procesoAlmObt,
+                OfertaQuerys.procesoAlmObt,
                 new { FechaActual = pFechaActual },
                 commandType: CommandType.StoredProcedure
             );
 
-            var uniqueOffers = new Dictionary<int, OfertaSalida>();
+            var ofertasUnicas = new Dictionary<int, OfertaSalida>();
 
             reader.Read<OfertaSalida, PublicacionSalida, OfertaSalida>(
                 (oferta, publicacion) =>
                 {
-                    if (!uniqueOffers.TryGetValue(oferta.Oferta_ID, out var existingOffer))
+                    if (!ofertasUnicas.TryGetValue(oferta.Oferta_ID, out var ofertasExistentes))
                     {
-                        existingOffer = oferta;
-                        existingOffer.Oferta_ProdOfer = new List<PublicacionSalida>();
-                        uniqueOffers[oferta.Oferta_ID] = existingOffer;
+                        ofertasExistentes = oferta;
+                        ofertasExistentes.Oferta_ProdOfer = new List<PublicacionSalida>();
+                        ofertasUnicas[oferta.Oferta_ID] = ofertasExistentes;
                     }
 
                     if (publicacion != null)
                     {
-                        existingOffer.Oferta_ProdOfer.Add(publicacion);
+                        ofertasExistentes.Oferta_ProdOfer.Add(publicacion);
                     }
 
-                    return existingOffer;
+                    return ofertasExistentes;
                 },
                 splitOn: "Public_ID"
             );
 
-            return uniqueOffers.Values.ToList();
+            return ofertasUnicas.Values.ToList();
         }
 
         public async Task<OfertaSalida> ObtenerOfertaPorID(int pId)
@@ -70,7 +68,7 @@ namespace Datos
             dbConnection.Open();
 
             var result = await dbConnection.QueryAsync<OfertaSalida, PublicacionSalida, OfertaSalida>(
-                _ofertaQuerys.obtenerOfertaQuery,
+                OfertaQuerys.obtenerOfertaQuery,
                 map: (oferta, publicacion) =>
                 {
                     if (oferta.Oferta_ProdOfer == null)
@@ -106,7 +104,7 @@ namespace Datos
             dbConnection.Open();
 
             int verificar = await dbConnection.ExecuteScalarAsync<int>(
-                _ofertaQuerys.verificarCreador, 
+                OfertaQuerys.verificarCreador, 
                 new { Public_UsuarioID = pUsuarioId, 
                 Public_ID = pOfertaID
                 });
@@ -122,7 +120,7 @@ namespace Datos
             DateTime fechaActual = DateTime.Now;
 
             IDataReader reader = await dbConnection.ExecuteReaderAsync(
-                _ofertaQuerys.procesoVDescuento,
+                OfertaQuerys.procesoVDescuento,
                 new
                 {
                     PublicID = pPublicID,
@@ -146,7 +144,7 @@ namespace Datos
             dbConnection.Open();
 
             var result = await dbConnection.QueryAsync<OfertaSalida, PublicacionSalida, OfertaSalida>(
-                _ofertaQuerys.traerOfertasPorUsuarioID,
+                OfertaQuerys.traerOfertasPorUsuarioID,
                 map: (oferta, publicacion) =>
                 {
                     if (oferta.Oferta_ProdOfer == null)
@@ -181,32 +179,25 @@ namespace Datos
 
         public async Task<OfertaSalida> CrearOferta(OfertaCreacion pOferta)
         {
-            try
-            {
-                using IDbConnection dbConnection = CreateConnection();
-                dbConnection.Open();
+            using IDbConnection dbConnection = CreateConnection();
+            dbConnection.Open();
 
-                var parameters = new DynamicParameters();
-                parameters.Add("pOferta_UsuarioID", pOferta.Oferta_UsuarioID, DbType.Int32);
-                parameters.Add("pOferta_Nombre", pOferta.Oferta_Nombre, DbType.String);
-                parameters.Add("pOferta_Descuento", pOferta.Oferta_Descuento, DbType.Int32);
-                parameters.Add("pOferta_FInicio", pOferta.Oferta_FInicio, DbType.DateTime);
-                parameters.Add("pOferta_FFin", pOferta.Oferta_FFin, DbType.DateTime);
-                parameters.Add("pOferta_FCreacion", pOferta.Oferta_FCreacion, DbType.DateTime);
-                parameters.Add("@Oferta_ID", dbType: DbType.Int32, direction: ParameterDirection.Output);
-                parameters.Add("pProductosIds", string.Join(",", pOferta.Oferta_ProdOfer), DbType.String);
+            var parameters = new DynamicParameters();
+            parameters.Add("pOferta_UsuarioID", pOferta.Oferta_UsuarioID, DbType.Int32);
+            parameters.Add("pOferta_Nombre", pOferta.Oferta_Nombre, DbType.String);
+            parameters.Add("pOferta_Descuento", pOferta.Oferta_Descuento, DbType.Int32);
+            parameters.Add("pOferta_FInicio", pOferta.Oferta_FInicio, DbType.DateTime);
+            parameters.Add("pOferta_FFin", pOferta.Oferta_FFin, DbType.DateTime);
+            parameters.Add("pOferta_FCreacion", pOferta.Oferta_FCreacion, DbType.DateTime);
+            parameters.Add("@Oferta_ID", dbType: DbType.Int32, direction: ParameterDirection.Output);
+            parameters.Add("pProductosIds", string.Join(",", pOferta.Oferta_ProdOfer), DbType.String);
 
-                OfertaSalida ofertaSalida = await dbConnection.QueryFirstOrDefaultAsync<OfertaSalida>(
-                    _ofertaQuerys.procesoAlmCrear,
-                    parameters, 
-                    commandType: CommandType.StoredProcedure);
+            OfertaSalida ofertaSalida = await dbConnection.QueryFirstOrDefaultAsync<OfertaSalida>(
+                OfertaQuerys.procesoAlmCrear,
+                parameters, 
+                commandType: CommandType.StoredProcedure);
 
-                return ofertaSalida;
-            }
-            catch (Exception ex)
-            {
-                throw new DatabaseTransactionException($"Error al crear una nueva oferta: {ex}");
-            }
+            return ofertaSalida;
         }
 
         public async Task<bool> EditarOferta(int pId, OfertaModif pOfertaModif)
@@ -225,7 +216,7 @@ namespace Datos
             parametros.Add("pOfertaFModif", pOfertaModif.Oferta_FModif);
             
             int filasAfectadas = await dbConnection.ExecuteAsync(
-                _ofertaQuerys.procesoAlmEdit,
+                OfertaQuerys.procesoAlmEdit,
                 parametros,
                 commandType: CommandType.StoredProcedure
             );
@@ -239,7 +230,7 @@ namespace Datos
             dbConnection.Open();
 
             int filasAfectadas = await dbConnection.ExecuteAsync(
-                _ofertaQuerys.desasociarPublicaciones,
+                OfertaQuerys.desasociarPublicaciones,
                 new { OfertaID = pOfertaID }
             );
 
@@ -248,42 +239,28 @@ namespace Datos
 
         public async Task<bool> EliminarOferta(int? pOfertaID, int? pUsuarioID)
         {
-            try
-            {
-                using IDbConnection dbConnection = CreateConnection();
-                dbConnection.Open();
+            using IDbConnection dbConnection = CreateConnection();
+            dbConnection.Open();
 
-                bool filas = await dbConnection.ExecuteScalarAsync<bool>(
-                    _ofertaQuerys.procesoAlmElim,
-                    new { OfertaID = pOfertaID, UsuarioID = pUsuarioID },
-                    commandType: CommandType.StoredProcedure);
+            bool filas = await dbConnection.ExecuteScalarAsync<bool>(
+                OfertaQuerys.procesoAlmElim,
+                new { OfertaID = pOfertaID, UsuarioID = pUsuarioID },
+                commandType: CommandType.StoredProcedure);
 
-                return filas;
-            }
-            catch (Exception ex)
-            {
-                throw new DatabaseTransactionException($"Error al eliminar la oferta y sus publicaciones: {ex.Message}");
-            }
+            return filas;
         }
 
         public async Task<bool> OfertaCancelar(int pUsuarioID, int? pOfertaID, DateTime pFecha)
         {
-            try
-            {
-                using IDbConnection dbConnection = CreateConnection();
-                dbConnection.Open();
+            using IDbConnection dbConnection = CreateConnection();
+            dbConnection.Open();
 
-                bool filas = await dbConnection.ExecuteScalarAsync<bool>(
-                    _ofertaQuerys.procesoAlmCan,
-                    new { OfertaID = pOfertaID, UsuarioID = pUsuarioID, PFecha = pFecha },
-                    commandType: CommandType.StoredProcedure);
+            bool filas = await dbConnection.ExecuteScalarAsync<bool>(
+                OfertaQuerys.procesoAlmCan,
+                new { OfertaID = pOfertaID, UsuarioID = pUsuarioID, PFecha = pFecha },
+                commandType: CommandType.StoredProcedure);
 
-                return filas;
-            }
-            catch (Exception ex)
-            {
-                throw new DatabaseTransactionException($"Error al cancelar: {ex.Message}");
-            }
+            return filas;
         }
     }
 }
