@@ -3,9 +3,9 @@ using Configuracion;
 using Dapper;
 using Datos.Exceptions;
 using Datos.Interfaces.IDaos;
-using Datos.Interfaces.IQuerys;
 using Datos.Modelos;
 using Datos.Modelos.DTO;
+using Datos.Querys;
 using Microsoft.Extensions.Options;
 using MySql.Data.MySqlClient;
 
@@ -14,12 +14,10 @@ namespace Datos
     public class DaoBDPublicaciones : IDaoBDPublicaciones
     {
         private readonly string connectionString;
-        private IPublicacionQuerys _publicidadQuerys;
 
-        public DaoBDPublicaciones(IOptions<BDConfiguration> dbConfig, IPublicacionQuerys publicidadQuerys)
+        public DaoBDPublicaciones(IOptions<BDConfiguration> dbConfig)
         {
             connectionString = dbConfig.Value.ConnectionString;
-            _publicidadQuerys = publicidadQuerys;
         }
 
         private IDbConnection CreateConnection()
@@ -32,7 +30,7 @@ namespace Datos
         {
             using IDbConnection dbConnection = CreateConnection();
             dbConnection.Open();
-            return (await dbConnection.QueryAsync<PublicacionSalida>(_publicidadQuerys.obtenerPublicacionesQuery)).ToList();
+            return (await dbConnection.QueryAsync<PublicacionSalida>(PublicacionQuerys.obtenerPublicacionesQuery)).ToList();
         }
 
         public async Task<PublicacionSalida?> ObtenerPublicacionPorID(int pId)
@@ -40,7 +38,7 @@ namespace Datos
             using IDbConnection dbConnection = CreateConnection();
             dbConnection.Open();
             return (await dbConnection.QueryAsync<PublicacionSalida>(
-                _publicidadQuerys.obtenerPublicacionIDQuery, 
+                PublicacionQuerys.obtenerPublicacionIDQuery, 
                 new { Public_ID = pId }
             )).FirstOrDefault();
         }
@@ -50,7 +48,7 @@ namespace Datos
             using IDbConnection dbConnection = CreateConnection();
             dbConnection.Open();
             return (await dbConnection.QueryAsync<PublicacionSalidaM>(
-                _publicidadQuerys.obtenerPublicacionIDQuery, 
+                PublicacionQuerys.obtenerPublicacionIDQuery, 
                 new { Public_ID = pId }
             )).FirstOrDefault();
         }
@@ -60,7 +58,7 @@ namespace Datos
             using IDbConnection dbConnection = CreateConnection();
             dbConnection.Open();
             return (await dbConnection.QueryAsync<PublicacionSalida>(
-                _publicidadQuerys.obtenerPublicacionIDQuery,
+                PublicacionQuerys.obtenerPublicacionIDQuery,
                 new { Public_ID = pId }
             )).FirstOrDefault();
         }
@@ -70,7 +68,7 @@ namespace Datos
             using IDbConnection dbConnection = CreateConnection();
             dbConnection.Open();
             return (await dbConnection.QueryAsync<PublicacionSalida>(
-                _publicidadQuerys.obtenerStockPublicacionQuery,
+                PublicacionQuerys.obtenerStockPublicacionQuery,
                 new { Public_ID = pId }
             )).FirstOrDefault();
         }
@@ -81,7 +79,7 @@ namespace Datos
             dbConnection.Open();
 
             var productos = await dbConnection.QueryAsync<PublicacionSalida>(
-                _publicidadQuerys.proceAlmBuscar, 
+                PublicacionQuerys.proceAlmBuscar, 
                 new { Texto = pPalabraClave }, 
                 commandType: CommandType.StoredProcedure
             );
@@ -95,27 +93,20 @@ namespace Datos
             dbConnection.Open();
 
             return (await dbConnection.QueryAsync<PublicacionSalida>(
-                _publicidadQuerys.obtenerPublicacionesDeUnUsuarioQuery,
+                PublicacionQuerys.obtenerPublicacionesDeUnUsuarioQuery,
                 new { Public_UsuarioID = pUsuarioID }
             )).ToList();
         }
 
         public async Task<PublicacionSalidaC> CrearPublicacion(PublicacionCreacion pPublicacion)
         {
-            try
-            {
-                using IDbConnection dbConnection = CreateConnection();
-                dbConnection.Open();
+            using IDbConnection dbConnection = CreateConnection();
+            dbConnection.Open();
 
-                return await dbConnection.QuerySingleAsync<PublicacionSalidaC>(
-                    _publicidadQuerys.crearPublicacionQuery, 
-                    pPublicacion
-                );
-            }
-            catch (Exception ex)
-            {
-                throw new DatabaseTransactionException($"Error al crear una nueva publicación: {ex.Message}");
-            }
+            return await dbConnection.QuerySingleAsync<PublicacionSalidaC>(
+                PublicacionQuerys.crearPublicacionQuery, 
+                pPublicacion
+            );
         }
 
 
@@ -176,7 +167,7 @@ namespace Datos
             dbConnection.Open();
 
             var resultado = await dbConnection.QueryFirstOrDefaultAsync<int>(
-                _publicidadQuerys.procesoAlmVEstado,
+                PublicacionQuerys.procesoAlmVEstado,
                 new { PublicacionID = pPublicID, EstadoID = pEstadoID },
                 commandType: CommandType.StoredProcedure
             );
@@ -190,7 +181,7 @@ namespace Datos
             dbConnection.Open();
 
             int filasAfectadas = await dbConnection.ExecuteAsync(
-                _publicidadQuerys.procesoAlmEstado, 
+                PublicacionQuerys.procesoAlmEstado, 
                 new { PublicacionID = pPublicID, EstadoID = pEstadoID }
                 );
             
@@ -199,22 +190,15 @@ namespace Datos
 
         public async Task<bool> EliminarPublicacion(int? pPublicacionID, int? pUsuarioID)
         {
-            try
-            {
-                using IDbConnection dbConnection = CreateConnection();
-                dbConnection.Open();
+            using IDbConnection dbConnection = CreateConnection();
+            dbConnection.Open();
 
-                bool filas = await dbConnection.ExecuteScalarAsync<bool>(
-                    _publicidadQuerys.procesoAlmElim,
-                    new { PublicacionID = pPublicacionID, UsuarioID = pUsuarioID },
-                    commandType: CommandType.StoredProcedure);
+            bool filas = await dbConnection.ExecuteScalarAsync<bool>(
+                PublicacionQuerys.procesoAlmElim,
+                new { PublicacionID = pPublicacionID, UsuarioID = pUsuarioID },
+                commandType: CommandType.StoredProcedure);
 
-                return filas;
-            }
-            catch (Exception ex)
-            {
-                throw new DatabaseTransactionException($"Error al eliminar las publicaciones: {ex.Message}");
-            }
+            return filas;
         }
     }
 }

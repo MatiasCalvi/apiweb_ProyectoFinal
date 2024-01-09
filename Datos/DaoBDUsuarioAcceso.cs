@@ -1,8 +1,7 @@
 ﻿using Configuracion;
 using Dapper;
-using Datos.Exceptions;
 using Datos.Interfaces.IDaos;
-using Datos.Interfaces.IQuerys;
+using Datos.Querys;
 using Microsoft.Extensions.Options;
 using MySql.Data.MySqlClient;
 using System.Data;
@@ -12,12 +11,10 @@ namespace Datos
     public class DaoBDUsuarioAcceso : IDaoBDUsuarioAcceso
     {
         private readonly string connectionString;
-        private IAccesoQuerys _accesoQuerys;
 
-        public DaoBDUsuarioAcceso(IOptions<BDConfiguration> dbConfig, IAccesoQuerys accesoQuerys)
+        public DaoBDUsuarioAcceso(IOptions<BDConfiguration> dbConfig)
         {
             connectionString = dbConfig.Value.ConnectionString;
-            _accesoQuerys = accesoQuerys;
         }
 
         private IDbConnection CreateConnection()
@@ -27,76 +24,55 @@ namespace Datos
         }
 
         public async Task<string> ObtenerRefreshToken(int pUsuarioId)
-        {
-            try
+        { 
+            using (IDbConnection dbConnection = CreateConnection())
             {
-                using (IDbConnection dbConnection = CreateConnection())
-                {
-                    dbConnection.Open();
+                dbConnection.Open();
 
-                    var refreshToken = await dbConnection.QueryFirstOrDefaultAsync<string>(
-                        _accesoQuerys.existeTokenQuery, 
-                        new { Usuario_ID = pUsuarioId }
-                    );
+                var refreshToken = await dbConnection.QueryFirstOrDefaultAsync<string>(
+                    AccesoQuerys.existeTokenQuery, 
+                    new { Usuario_ID = pUsuarioId }
+                );
 
-                    return refreshToken;
-                }
-            }
-            catch (Exception ex)
-            {
-                throw new DatabaseQueryException("Error al obtener el token de actualización de la base de datos.", ex);
+                return refreshToken;
             }
         }
 
         public async Task GuardarRefreshToken(int pUsuarioId, string pRefreshToken)
         {
-            try
-            {
-                using IDbConnection dbConnection = CreateConnection();
-                dbConnection.Open();
+            using IDbConnection dbConnection = CreateConnection();
+            dbConnection.Open();
 
-                var existingToken = await dbConnection.QueryFirstOrDefaultAsync<string>(
-                    _accesoQuerys.existeTokenQuery, 
-                    new { Usuario_ID = pUsuarioId });
+            var existingToken = await dbConnection.QueryFirstOrDefaultAsync<string>(
+                AccesoQuerys.existeTokenQuery, 
+                new { Usuario_ID = pUsuarioId });
 
-                if (existingToken != null)
-                {
-                    await dbConnection.ExecuteAsync(
-                        _accesoQuerys.actualizarTokenQuery,
-                        new { Usuario_ID = pUsuarioId, 
-                        RefreshToken = pRefreshToken 
-                    });
-                }
-                else
-                {
-                    await dbConnection.ExecuteAsync(
-                        _accesoQuerys.crearTokenQuery, 
-                        new { Usuario_ID = pUsuarioId, 
-                        RefreshToken = pRefreshToken 
-                    });
-                }
-            }
-            catch (Exception ex)
+            if (existingToken != null)
             {
-                throw new DatabaseTransactionException("Error al almacenar el token de actualización en la base de datos.", ex);
+                await dbConnection.ExecuteAsync(
+                    AccesoQuerys.actualizarTokenQuery,
+                    new { Usuario_ID = pUsuarioId, 
+                    RefreshToken = pRefreshToken 
+                });
             }
+            else
+            {
+                await dbConnection.ExecuteAsync(
+                    AccesoQuerys.crearTokenQuery, 
+                    new { Usuario_ID = pUsuarioId, 
+                    RefreshToken = pRefreshToken 
+                });
+            }      
         }
 
         public async Task EliminarRefreshToken(int pUsuarioId)
         {
-            try
-            {
-                using IDbConnection dbConnection = CreateConnection();
-                dbConnection.Open();
-                await dbConnection.ExecuteAsync(
-                    _accesoQuerys.eliminarTokenQuery, 
-                    new { Usuario_ID = pUsuarioId 
-                });
-            }
-            catch (Exception ex)
-            {
-                throw new DatabaseTransactionException($"Error al eliminar el token de actualización para el usuario con el ID: {pUsuarioId}.", ex);
-            }
+            using IDbConnection dbConnection = CreateConnection();
+            dbConnection.Open();
+            await dbConnection.ExecuteAsync(
+                AccesoQuerys.eliminarTokenQuery, 
+                new { Usuario_ID = pUsuarioId 
+            });
         }
     }
 }

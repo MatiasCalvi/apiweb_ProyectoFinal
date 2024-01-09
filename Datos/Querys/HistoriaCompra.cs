@@ -1,10 +1,8 @@
-﻿using Datos.Interfaces.IQuerys;
-
-namespace Datos.Querys
+﻿namespace Datos.Querys
 {
-    public class HistoriaQuerys : IHistoriaQuerys
+    public class HistoriaQuerys 
     {
-        public string obtenerHistorialQuery { get; set; } = "SELECT * FROM historial_compras WHERE HC_UsuarioID = @HC_UsuarioID";
+        public static string obtenerHistorialQuery { get; set; } = "SELECT * FROM historial_compras WHERE HC_UsuarioID = @HC_UsuarioID";
 
     }
 }

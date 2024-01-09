@@ -6,19 +6,17 @@ using Configuracion;
 using Datos.Modelos.DTO;
 using Datos.Interfaces.IDaos;
 using Datos.Modelos;
-using Datos.Interfaces.IQuerys;
+using Datos.Querys;
 
 namespace Datos
 {
     public class DaoBDUsuarios : IDaoBDUsuarios
     {
         private readonly string connectionString;
-        private IUsuarioQuerys _usuariosQuery;
         
-        public DaoBDUsuarios(IOptions<BDConfiguration> dbConfig, IUsuarioQuerys usuariosQuery)
+        public DaoBDUsuarios(IOptions<BDConfiguration> dbConfig)
         {
             connectionString = dbConfig.Value.ConnectionString;
-            _usuariosQuery = usuariosQuery;
         }
 
         private IDbConnection CreateConnection()
@@ -32,7 +30,7 @@ namespace Datos
             using IDbConnection dbConnection = CreateConnection();
             dbConnection.Open();
             return (await dbConnection.QueryAsync<UsuarioSalida>(
-                _usuariosQuery.obtenerUsuarioIDQuery, 
+                UsuariosQuery.obtenerUsuarioIDQuery, 
                 new { Usuario_ID = pId })).FirstOrDefault();
         }
 
@@ -41,7 +39,7 @@ namespace Datos
             using IDbConnection dbConnection = CreateConnection();
             dbConnection.Open();
             return (await dbConnection.QueryAsync<UsuarioModif>(
-                _usuariosQuery.obtenerUsuarioIDQuery, 
+                UsuariosQuery.obtenerUsuarioIDQuery, 
                 new { Usuario_ID = pId })).FirstOrDefault();
         }
 
@@ -50,7 +48,7 @@ namespace Datos
             using IDbConnection dbConnection = CreateConnection();
             dbConnection.Open();
             return await dbConnection.QueryFirstOrDefaultAsync<UsuarioSalida>(
-                _usuariosQuery.obtenerUsuarioEmailQuery, 
+                UsuariosQuery.obtenerUsuarioEmailQuery, 
                 new { Usuario_Email = pEmail });   
         }
 
@@ -59,7 +57,7 @@ namespace Datos
             using IDbConnection dbConnection = CreateConnection();
             dbConnection.Open();
             return await dbConnection.QueryFirstOrDefaultAsync<UsuarioModif>(
-                _usuariosQuery.obtenerUsuarioEmailQuery, 
+                UsuariosQuery.obtenerUsuarioEmailQuery, 
                 new { Usuario_Email = pEmail }); 
         }
 
@@ -67,7 +65,7 @@ namespace Datos
         {
             using IDbConnection dbConnection = CreateConnection();
             dbConnection.Open();
-            return await dbConnection.QuerySingleAsync<UsuarioSalidaC>(_usuariosQuery.crearUsuarioQuery, pUsuario);
+            return await dbConnection.QuerySingleAsync<UsuarioSalidaC>(UsuariosQuery.crearUsuarioQuery, pUsuario);
         }
 
         public async Task<bool> ActualizarUsuario(int pId, UsuarioModif pUsuarioModif)

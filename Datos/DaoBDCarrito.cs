@@ -2,9 +2,9 @@
 using Dapper;
 using Datos.Exceptions;
 using Datos.Interfaces.IDaos;
-using Datos.Interfaces.IQuerys;
 using Datos.Modelos;
 using Datos.Modelos.DTO;
+using Datos.Querys;
 using Microsoft.Extensions.Options;
 using MySql.Data.MySqlClient;
 using System.Data;
@@ -14,12 +14,10 @@ namespace Datos
     public class DaoBDCarrito : IDaoBDCarrito
     {
         private readonly string connectionString;
-        private ICarritoQuerys _carritoQuery;
 
-        public DaoBDCarrito(IOptions<BDConfiguration> dbConfig, ICarritoQuerys carritoQuery)
+        public DaoBDCarrito(IOptions<BDConfiguration> dbConfig)
         {
             connectionString = dbConfig.Value.ConnectionString;
-            _carritoQuery = carritoQuery;
         }
 
         private IDbConnection CreateConnection()
@@ -34,7 +32,7 @@ namespace Datos
             dbConnection.Open();
             
             List<dynamic> listaDinamica = (await dbConnection.QueryAsync<dynamic>(
-                _carritoQuery.obtenerCarritoQuery, 
+                CarritoQuerys.obtenerCarritoQuery, 
                 new { Carrito_UsuarioID = pUsuarioID }
             )).ToList();
             
@@ -70,7 +68,7 @@ namespace Datos
                 dbConnection.Open();
                 
                 int result = await dbConnection.ExecuteAsync(
-                    _carritoQuery.agregarProducto, 
+                    CarritoQuerys.agregarProducto, 
                     new { Carrito_UsuarioID = pUsuarioID, 
                     Carrito_PID = pCarrito.Carrito_PID, 
                     Carrito_ProdUnidades = pCarrito.Carrito_ProdUnidades 
@@ -86,85 +84,56 @@ namespace Datos
 
         public async Task<bool> AgregarAlHistorial(Historia pHistoriaCompra)
         {
-            try
-            {
-                using IDbConnection dbConnection = CreateConnection();
-                dbConnection.Open();
+            using IDbConnection dbConnection = CreateConnection();
+            dbConnection.Open();
 
-                var result = await dbConnection.ExecuteAsync(
-                    _carritoQuery.agregarAlHistorialQuery, 
-                   pHistoriaCompra 
-                );
+            var result = await dbConnection.ExecuteAsync(
+                CarritoQuerys.agregarAlHistorialQuery, 
+               pHistoriaCompra 
+            );
 
-                return result > 0;
-            }
-            catch (Exception ex)
-            {
-                throw new DatabaseTransactionException($"Error al comprar el producto: {ex.Message}"); 
-            }
+            return result > 0;
         }
 
         public async Task<bool> Eliminar(int pUsuarioID, int pPublicacionID)
         {
-            try
-            {
-                using IDbConnection dbConnection = CreateConnection();
-                dbConnection.Open();
+            using IDbConnection dbConnection = CreateConnection();
+            dbConnection.Open();
 
-                int result = await dbConnection.ExecuteAsync(
-                    _carritoQuery.eliminarQuery, 
-                    new { Carrito_UsuarioID = pUsuarioID, 
-                    Carrito_PID = pPublicacionID 
-                });
+            int result = await dbConnection.ExecuteAsync(
+                CarritoQuerys.eliminarQuery, 
+                new { Carrito_UsuarioID = pUsuarioID, 
+                Carrito_PID = pPublicacionID 
+            });
 
-                return result > 0;
-            }
-            catch (Exception ex)
-            {
-                throw new DatabaseTransactionException($"Error al eliminar el producto: {ex.Message}");
-            }
+            return result > 0;
         }
 
         public async Task<bool> EliminarTodo(int pUsuarioID)
         {
-            try
-            {
-                using IDbConnection dbConnection = CreateConnection();
-                dbConnection.Open();
+            using IDbConnection dbConnection = CreateConnection();
+            dbConnection.Open();
 
-                int result = await dbConnection.ExecuteAsync(
-                    _carritoQuery.eliminarTodoQuery, 
-                    new { Carrito_UsuarioID = pUsuarioID
-                });
+            int result = await dbConnection.ExecuteAsync(
+                CarritoQuerys.eliminarTodoQuery, 
+                new { Carrito_UsuarioID = pUsuarioID
+            });
 
-                return result > 0;
-            }
-            catch (Exception ex)
-            {
-                throw new DatabaseTransactionException($"Error al eliminar el producto: {ex.Message}");
-            }
+            return result > 0;
         }
 
         public async Task<bool> Duplicado(int pUsuarioID, int pPublicacionID)
         {
-            try
-            {
-                using IDbConnection dbConnection = CreateConnection();
-                dbConnection.Open();
+            using IDbConnection dbConnection = CreateConnection();
+            dbConnection.Open();
 
-                int result = await dbConnection.QueryFirstOrDefaultAsync<int>(
-                    _carritoQuery.verificarDuplicado, 
-                    new { Carrito_UsuarioID = pUsuarioID, 
-                    Carrito_PID = pPublicacionID 
-                });
+            int result = await dbConnection.QueryFirstOrDefaultAsync<int>(
+                CarritoQuerys.verificarDuplicado, 
+                new { Carrito_UsuarioID = pUsuarioID, 
+                Carrito_PID = pPublicacionID 
+            });
 
-                return result > 0;
-            }
-            catch (Exception ex)
-            {
-                Console.WriteLine($"Error al verificar duplicado: {ex.Message}");
-                throw; 
-            }
+            return result > 0;
         }
     }
 }

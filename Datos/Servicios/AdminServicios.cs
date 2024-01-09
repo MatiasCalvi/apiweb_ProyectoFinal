@@ -1,7 +1,6 @@
 ﻿using Datos.Exceptions;
 using Datos.Interfaces.IDaos;
 using Datos.Interfaces.IServicios;
-using Datos.Interfaces.IValidaciones;
 using Datos.Modelos;
 using Datos.Modelos.DTO;
 
@@ -107,9 +106,39 @@ namespace Datos.Servicios
             return await _daoBDAdmins.ObtenerHistoriales();
         }
 
+        public async Task<List<HistoriaCompraSalida>> ObtenerHistorial(int pUsuarioID)
+        {
+            return await _daoBDAdmins.ObtenerHistorial(pUsuarioID);
+        }
+
         public async Task<List<OfertaSalida>> ObtenerOfertas()
         {
-            return await _daoBDAdmins.ObtenerTodasLasOfertas();
+            List<OfertaSalida> lista = await _daoBDAdmins.ObtenerTodasLasOfertas();
+            List<OfertaSalida> nuevalista = new List<OfertaSalida>();
+            int descuento;
+
+            for (int i = 0; i < lista.Count; i++)
+            {
+                OfertaSalida oferta = lista[i];
+                for (int j = 0; j < oferta.Oferta_ProdOfer.Count; j++)
+                {
+                    PublicacionSalida publicacion = oferta.Oferta_ProdOfer[j];
+                    descuento = await _ofertasServicios.VerificarDescuento(publicacion.Public_ID);
+                    publicacion.Public_PrecioFinal = publicacion.Public_Precio;
+                    if (descuento == 0)
+                    {
+                        publicacion.Public_PrecioFinal = publicacion.Public_Precio;
+                    }
+                    else
+                    {
+                        decimal porcentajeDescuento = descuento / 100m;
+                        decimal complemento = 1 - porcentajeDescuento;
+                        publicacion.Public_PrecioFinal = publicacion.Public_Precio * complemento;
+                    }
+                }
+                nuevalista.Add(oferta);
+            }
+            return nuevalista;
         }
 
         public async Task<bool> VerificarUsuarioHabilitado(int pId)
@@ -210,6 +239,12 @@ namespace Datos.Servicios
             bool actualizado = await _daoBDAdmins.EditarOfertaAdmin(pId, pOfertaModif);
 
             return actualizado;
+        }
+
+        public async Task<bool> DesasociarPublicaciones(int pId)
+        {
+            bool resultado = await _daoBDAdmins.DesasociarPublicaciones(pId);
+            return resultado;
         }
     }
 }

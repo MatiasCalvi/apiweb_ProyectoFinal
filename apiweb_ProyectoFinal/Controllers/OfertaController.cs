@@ -152,7 +152,7 @@ namespace apiweb_ProyectoFinal.Controllers
             }
             catch (Exception ex)
             {
-                _logger.LogError(ex, "Error al eliminar la oferta");
+                _logger.LogError(ex, $"Error al desasociar las publicaciones de la oferta {ofertaID}");
                 return StatusCode(500);
             }
         }
