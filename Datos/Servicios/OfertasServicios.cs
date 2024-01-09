@@ -103,7 +103,7 @@ namespace Datos.Servicios
                     }
                 }
 
-                nuevalista.Add(oferta); // Mover la adición de la oferta a la lista fuera del bucle interno
+                nuevalista.Add(oferta);
             }
 
             return nuevalista;
@@ -172,6 +172,7 @@ namespace Datos.Servicios
             bool resultado = await _daoBDOfertas.DesasociarPublicaciones(pId);
             return resultado;
         }
+
         public async Task<bool> OfertaCancelar(int pUsuarioID, int pOfertaID)
         {
             DateTime fecha = DateTime.Now;

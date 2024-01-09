@@ -1,10 +1,8 @@
 using Configuracion;
 using Datos;
 using Datos.Interfaces.IDaos;
-using Datos.Interfaces.IQuerys;
 using Datos.Interfaces.IServicios;
 using Datos.Interfaces.IValidaciones;
-using Datos.Querys;
 using Datos.Servicios;
 using Datos.Validaciones;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
@@ -72,14 +70,6 @@ builder.Services.AddScoped<IPublicacionServicios, PublicacionServicios>();
 builder.Services.AddScoped<ICarritoServicios, CarritoServicios>();
 builder.Services.AddScoped<IHistoriaServicios, HistoriaServicios>();
 builder.Services.AddScoped<IOfertasServicios, OfertasServicios>();
-
-builder.Services.AddScoped<IAccesoQuerys, AccesoQuerys>();
-builder.Services.AddScoped<IAdminQuerys, AdminQuerys>();
-builder.Services.AddScoped<IPublicacionQuerys, PublicacionQuerys>();
-builder.Services.AddScoped<IUsuarioQuerys, UsuariosQuery>();
-builder.Services.AddScoped<ICarritoQuerys, CarritoQuerys>();
-builder.Services.AddScoped<IHistoriaQuerys, HistoriaQuerys>();
-builder.Services.AddScoped<IOfertaQuerys, OfertaQuerys>();
 
 builder.Services.Configure<BDConfiguration>(builder.Configuration.GetSection("BD"));
 builder.Services.Configure<JwtConfiguration>(builder.Configuration.GetSection("Jwt"));
